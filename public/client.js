@@ -1,4 +1,4 @@
-// client.js - AtomicEnd Multimodal UI logic (Combined Fixes)
+// client.js - AtomicEnd Multimodal UI logic (Combined Fixes with Toggle Menu)
 
 'use strict';
 
@@ -12,7 +12,7 @@ const fileInput = document.getElementById('fileInput');
 const currentChatTitleEl = document.getElementById('current-chat-title');
 const sidebar = document.getElementById('sidebar');
 const menuBtn = document.getElementById('menuBtn');
-const closeSidebarBtn = document.getElementById('closeSidebarBtn'); 
+// const closeSidebarBtn = document.getElementById('closeSidebarBtn'); // REMOVED
 const showActionsBtn = document.getElementById('showActionsBtn');
 const floatingActions = document.getElementById('floatingActions');
 const chooseFileBtn = document.getElementById('chooseFileBtn'); 
@@ -487,15 +487,11 @@ fileInput.onchange = (e) => {
 };
 
 // Sidebar Controls
+// CRITICAL FIX: menuBtn now Toggles the sidebar
 menuBtn.onclick = () => {
-    sidebar.classList.add('open');
+    sidebar.classList.toggle('open');
 };
-closeSidebarBtn.onclick = () => {
-    sidebar.classList.remove('open');
-};
-newChatBtn.onclick = () => {
-    startNewChat();
-};
+
 clearHistoryBtn.onclick = () => {
     if (confirm("Are you sure you want to clear ALL chat history?")) {
         localStorage.removeItem('atomicEndChats');
@@ -557,4 +553,4 @@ window.onload = () => {
     }
     renderChatList();
     inputEl.focus();
-};
+}; 
