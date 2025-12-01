@@ -33,10 +33,9 @@ body{
     transition:transform .3s;
     background-color:var(--bg);
     width: 100%;
-    /* No need for flex-grow on main content itself */
 }
 
-/* HEADER BAR (NOW STATIC/FIXED) */
+/* HEADER BAR (FIXED) */
 #main-header{
     display:flex;
     align-items:center;
@@ -45,7 +44,7 @@ body{
     border-bottom:1px solid #1c1c1c;
     color:white;
     
-    /* CRITICAL FIX 1: Fix the header to the top */
+    /* CRITICAL FIX 1: Fixed Position */
     position: fixed; 
     top: 0;
     left: 0;
@@ -126,11 +125,11 @@ body{
 
 /* CHAT CONTAINER (Scrollable area) */
 #chat-container {
-    height: 100vh; /* Use 100vh of the main content area */
+    height: 100vh; 
     overflow-y:auto;
-    /* CRITICAL FIX 2: Add padding-top and padding-bottom to reserve space */
-    padding-top: 64px; /* Estimated header height (40px content + 2*12px padding) */
-    padding-bottom: 110px; /* Estimated footer height (input area + padding) */
+    /* CRITICAL FIX 2: Top/Bottom padding matches fixed header/footer height */
+    padding-top: 64px; 
+    padding-bottom: 110px; 
     padding-left: 10px;
     padding-right: 10px;
 }
@@ -202,7 +201,7 @@ pre code{
 }
 
 
-/* ========== INPUT BAR (NOW STATIC/FIXED) ========== */
+/* ========== INPUT BAR (FIXED) ========== */
 #input-footer{
     width:100%;
     padding:10px 10px;
@@ -211,7 +210,7 @@ pre code{
     display:flex;flex-direction:column;
     align-items:center;
     
-    /* CRITICAL FIX 3: Fix the footer to the bottom */
+    /* CRITICAL FIX 3: Fixed Position */
     position: fixed; 
     bottom: 0;
     left: 0;
@@ -369,4 +368,4 @@ pre code{
     #main-header{
         justify-content:space-between;
     }
-  }
+      } 
