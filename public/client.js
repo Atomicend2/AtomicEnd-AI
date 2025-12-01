@@ -1,4 +1,4 @@
-// client.js - AtomicEnd Multimodal UI logic (FINAL FIXES: Layout + Dynamic Chat Title + Voice Record)
+// client.js - AtomicEnd Multimodal UI logic (FINAL FIXES: Layout + Dynamic Chat Title + Voice Record + Form Overlay)
 
 'use strict';
 
@@ -25,8 +25,10 @@ const chatList = document.getElementById('chat-list');
 const clearHistoryBtn = document.getElementById('clearHistoryBtn'); 
 const signInBtn = document.getElementById('signInBtn');
 
-// Dev Form Elements
+// Dev Form Elements (UPDATED)
+const devFormOverlay = document.getElementById('devFormOverlay');
 const devFormContainer = document.getElementById('devFormContainer');
+const closeDevFormBtn = document.getElementById('closeDevFormBtn');
 const devSubmitBtn = document.getElementById('devSubmitBtn');
 const devContactInput = document.getElementById('devContactInput');
 const devMessageInput = document.getElementById('devMessageInput');
@@ -64,7 +66,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     };
     recognition.onend = () => {
         recognizing = false;
-        recordBtn.textContent = '🎙️ Record';
+        recordBtn.textContent = '🎙️'; // Reset to mic emoji
         recordBtn.style.backgroundColor = '#222';
     };
     recognition.onresult = (e) => {
@@ -93,7 +95,7 @@ recordBtn.addEventListener('click', () => {
 });
 
 
-// --- Utility Functions (Unchanged) ---
+// --- Utility Functions ---
 function escapeHtml(s){ 
     return String(s).replace(/[&<>"']/g, (m)=>({ 
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' 
@@ -182,7 +184,7 @@ function appendMessage(role, html) {
 }
 
 async function typeWriter(el, htmlContent, speed = 12) {
-    devFormContainer.style.display = 'none';
+    devFormOverlay.style.display = 'none'; // CRITICAL FIX: Hide the overlay instead of container
     el.innerHTML = ''; 
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
@@ -198,20 +200,19 @@ async function typeWriter(el, htmlContent, speed = 12) {
     const finalRenderedText = fullText.toLowerCase(); 
 
     if (finalRenderedText.includes('interested in joining the team') || finalRenderedText.includes('submission form is available below')) {
-        devFormContainer.style.display = 'flex';
-        chatEl.scrollTop = chatEl.scrollHeight;
+        devFormOverlay.style.display = 'flex'; // CRITICAL FIX: Show the overlay
     }
 }
 
 
-// --- Main Chat Submission Logic (Unchanged) ---
+// --- Main Chat Submission Logic ---
 async function submitChat(message) {
     if(isSending) return; 
     isSending = true;
 
     // Hide actions menu and dev form
     floatingActions.style.display = 'none';
-    devFormContainer.style.display = 'none';
+    devFormOverlay.style.display = 'none'; // Use overlay visibility
     
     // Check if we need to rename the chat BEFORE submission
     const currentTitle = chatHistory[activeChatId]?.title;
@@ -333,7 +334,7 @@ async function submitChat(message) {
 }
 
 
-// --- Multi-Chat Functions (Unchanged) ---
+// --- Multi-Chat Functions ---
 function renderChatList() {
     chatList.innerHTML = '';
     const chatIds = Object.keys(chatHistory);
@@ -416,22 +417,30 @@ function startNewChat(id = null, title = 'New Chat') {
     loadChat(newId);
 }
 
-// --- Event Listeners and Initial Load (Unchanged except recordBtn) ---
+// --- Event Listeners and Initial Load ---
 
 // Toggle Floating Actions Menu
 showActionsBtn.onclick = () => {
     floatingActions.style.display = floatingActions.style.display === 'flex' ? 'none' : 'flex';
-    devFormContainer.style.display = 'none'; // Hide form if actions shown
+    devFormOverlay.style.display = 'none'; // CRITICAL FIX: Hide the overlay when showing actions
 };
 
-// Dev Team Button in Floating Menu
+// Dev Team Button in Floating Menu (UPDATED LOGIC)
 devTeamBtn.onclick = () => {
     floatingActions.style.display = 'none';
-    const formStyle = devFormContainer.style.display;
-    devFormContainer.style.display = formStyle === 'flex' ? 'none' : 'flex';
-    if (devFormContainer.style.display === 'flex') {
-        chatEl.scrollTop = chatEl.scrollHeight;
+    
+    // Toggle the overlay
+    const overlayStyle = devFormOverlay.style.display;
+    if (overlayStyle === 'flex') {
+        devFormOverlay.style.display = 'none';
+    } else {
+        devFormOverlay.style.display = 'flex';
     }
+};
+
+// CRITICAL FIX: Close button for the form overlay
+closeDevFormBtn.onclick = () => {
+    devFormOverlay.style.display = 'none';
 };
 
 // Auto resize textarea
@@ -513,12 +522,12 @@ signInBtn.onclick = () => {
     alert("Account Settings and Cloud Sync feature coming soon!");
 };
 
-// Dev Submission Logic (Preserved)
+// Dev Submission Logic 
 devSubmitBtn.onclick = async () => {
     const contact = devContactInput.value.trim();
     const message = devMessageInput.value.trim();
     if (contact.length < 5 || message.length < 10) {
-        alert("Please provide a valid contact and a message.");
+        alert("Please provide a valid contact and a message (minimum 10 characters).");
         return;
     }
     
@@ -545,7 +554,7 @@ devSubmitBtn.onclick = async () => {
         statusDiv.innerHTML = `❌ Network Error: Could not reach server.`;
         console.error('Submission error:', error);
     } finally {
-        devFormContainer.style.display = 'none';
+        devFormOverlay.style.display = 'none'; // CRITICAL FIX: Hide the overlay after submission
     }
 };
 
