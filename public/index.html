@@ -1,59 +1,75 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Atomic End � Elite AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atomic End — Elite AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="stylesheet" href="style.css" />
-  <script defer src="client.js"></script> 
+  <script defer src="client.js"></script>
 </head>
 <body>
-    <div id="sidebar">
-        <div id="user-info">
-            <button id="signInBtn">Sign In with Google</button>
-            <div id="profile-area" style="display: none;">
-                <img id="profile-pic" src="/default-avatar.png" alt="User" />
-                <span id="username">Guest User</span>
-            </div>
-        </div>
-        
-        <button id="newChatBtn" class="new-chat-btn"> New Chat</button>
-        
-        <div id="chat-list-container">
-            <div id="chat-list"></div>
-        </div>
-        
-        <button id="clearHistoryBtn" class="clear-history-btn"> Clear All Chats & History</button>
+  <aside id="sidebar" aria-label="Chats sidebar">
+    <div class="sidebar-header">
+      <div class="title-row">
+        <h2 id="app-title-sidebar">Atomic<span>End</span></h2>
+      </div>
+      <button id="closeSidebarBtn" class="action-btn" aria-label="Close sidebar">✕</button>
     </div>
 
-    <div id="main-content">
-        <header id="main-header">
-            <button id="menuBtn"></button>
-            <h1>Atomic<span>End</span></h1>
-            <span class="version-tag">Elite AI & project generator</span>
-        </header>
-
-        <div id="chat-container">
-            <div id="chat" aria-live="polite">
-                </div>
-        </div>
-
-        <footer id="input-footer">
-            <div id="input-area">
-                <input type="file" id="fileInput" accept="image/*, text/plain, .txt, .js, .html, .css, .json, .py, .java" style="display:none;">
-                <button id="chooseFileBtn" class="action-btn" title="Attach file/image">Attach File</button>
-                <textarea id="input" placeholder="Ask AtomicEnd..." rows="1"></textarea>
-                <button id="recordBtn" class="action-btn" title="Record voice"></button>
-                <button id="sendBtn" class="action-btn send-btn" title="Send message">Send</button>
-            </div>
-            
-            <div id="devFormContainer" class="dev-form-container" style="display: none;">
-                <label for="devContactInput">Join the Dev Team:</label>
-                <input type="text" id="devContactInput" placeholder="Email or WhatsApp Number" required />
-                <textarea id="devMessageInput" placeholder="Your message/collaboration interest..." required></textarea>
-                <button id="devSubmitBtn">Submit Interest</button>
-            </div>
-        </footer>
+    <div class="sidebar-controls">
+      <button id="newChatBtn" class="new-chat-btn" aria-label="Start new chat">➕ New Chat</button>
     </div>
+
+    <div id="chat-list-container" class="chat-list-wrapper" aria-live="polite">
+      <div id="chat-list" role="list"></div>
+    </div>
+
+    <footer class="sidebar-footer">
+      <button id="signInBtn" aria-label="Account settings">⚙️ Account Settings</button>
+      <button id="clearHistoryBtn" class="clear-history-btn" aria-label="Clear all chats">🧹 Clear All Chats</button>
+    </footer>
+  </aside>
+
+  <main id="main-content" role="main">
+    <header id="main-header" class="main-header" role="banner">
+      <div class="left-group">
+        <button id="menuBtn" class="action-btn" aria-label="Open menu">☰</button> 
+        <h1 id="current-chat-title">New Chat</h1>
+      </div>
+
+      <div class="header-actions" role="toolbar" aria-label="Chat actions">
+        <button id="settingsBtn" class="action-btn" aria-label="Settings">⚙️</button>
+      </div>
+    </header>
+
+    <section id="chat-container" class="chat-container" aria-live="polite" aria-label="Chat messages">
+      <div id="chat" class="chat" role="log"></div>
+    </section>
+
+    <footer id="input-footer" class="input-footer" role="region" aria-label="Message input">
+      <input type="file" id="fileInput" accept="image/*, text/plain, .txt, .js, .html, .css, .json, .py, .java" style="display:none" />
+
+      <div id="floatingActions" class="floating-actions" style="display:none" aria-hidden="true">
+        <button id="chooseFileBtn" class="floating-action-btn" title="Attach File">📎 Attach File</button>
+        <button id="recordBtn" class="floating-action-btn" title="Record Voice">🎙️ Record</button>
+        <button id="devTeamBtn" class="floating-action-btn" title="Join Dev Team">🧑‍💻 Join Dev Team</button>
+      </div>
+
+      <div id="input-area" class="input-area">
+        <button id="showActionsBtn" class="action-btn" aria-label="Open actions">＋</button>
+
+        <textarea id="input" class="chat-input" placeholder="Message AtomicEnd..." rows="1" aria-label="Message input"></textarea>
+
+        <button id="sendBtn" class="action-btn send-btn" title="Send message" aria-label="Send">▲</button>
+      </div>
+
+      <div id="devFormContainer" class="dev-form-container" style="display:none">
+        <label for="devContactInput">Join the Dev Team:</label>
+        <input type="text" id="devContactInput" placeholder="Email or WhatsApp Number" required />
+        <textarea id="devMessageInput" placeholder="Your message/collaboration interest..." required></textarea>
+        <button id="devSubmitBtn">Submit Interest</button>
+      </div>
+    </footer>
+  </main>
 </body>
 </html>

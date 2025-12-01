@@ -1,98 +1,91 @@
-// client.js - AtomicEnd Multimodal UI logic (FINAL FIXES FOR APK)
+// client.js - AtomicEnd Multimodal UI logic (FINAL FIXES: Layout + Dynamic Chat Title)
+
+'use strict';
 
 // --- UI Elements ---
 const chatEl = document.getElementById('chat');
 const inputEl = document.getElementById('input');
 const sendBtn = document.getElementById('sendBtn');
 const fileInput = document.getElementById('fileInput');
+
+// New UI Elements
+const currentChatTitleEl = document.getElementById('current-chat-title');
+const sidebar = document.getElementById('sidebar');
+const menuBtn = document.getElementById('menuBtn');
+const closeSidebarBtn = document.getElementById('closeSidebarBtn'); 
+const showActionsBtn = document.getElementById('showActionsBtn');
+const floatingActions = document.getElementById('floatingActions');
 const chooseFileBtn = document.getElementById('chooseFileBtn'); 
+const recordBtn = document.getElementById('recordBtn');
+const devTeamBtn = document.getElementById('devTeamBtn');
+
+// Sidebar/Footer Elements
+const newChatBtn = document.getElementById('newChatBtn');
+const chatList = document.getElementById('chat-list');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn'); 
+const signInBtn = document.getElementById('signInBtn');
+
+// Dev Form Elements
 const devFormContainer = document.getElementById('devFormContainer');
 const devSubmitBtn = document.getElementById('devSubmitBtn');
 const devContactInput = document.getElementById('devContactInput');
 const devMessageInput = document.getElementById('devMessageInput');
 
-// Sidebar Elements
-const sidebar = document.getElementById('sidebar');
-const menuBtn = document.getElementById('menuBtn');
-const newChatBtn = document.getElementById('newChatBtn');
-const chatList = document.getElementById('chat-list');
-const signInBtn = document.getElementById('signInBtn');
-const clearHistoryBtn = document.getElementById('clearHistoryBtn'); 
 
 // --- Session Management ---
 let chatHistory = JSON.parse(localStorage.getItem('atomicEndChats')) || {};
 let activeChatId = localStorage.getItem('atomicEndActiveChatId') || 'default';
 let uploadedFileBase64 = null; 
 let uploadedFileMimeType = null;
-let isSending = false; // Prevent double submits
+let isSending = false; 
 
 const CHAT_ENDPOINT = '/chat'; 
-const INITIAL_AI_MSG = 'Welcome to Atomic End! How can I help you today?';
+const INITIAL_AI_MSG = `Welcome to **AtomicEnd**, the Elite AI platform crafted by Atomic! I specialize in:
+* **Code Generation** (HTML, JS, Python, almost any language you can think of, etc.)
+* **Deep Research** & Analysis
+* **Project Setup** & File Generation (ZIP/APK/EXE source and many more)
+* **I do Guided Study** & Debugging.
+How can I assist you with your project today?`;
 
-// --- Voice Recognition Setup (Code omitted for brevity, ensure your copy is complete) ---
-// ... [KEEP YOUR VOICE RECOGNITION SETUP HERE] ...
+// --- Voice Recognition Setup ---
 let recognizing = false;
 let recognition = null;
-const recordBtn = document.getElementById('recordBtn');
 
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SR();
-  recognition.lang = 'en-US';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SR();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
 
-  recognition.onstart = () => {
-    recognizing = true;
-    recordBtn.textContent = '🔴';
-    recordBtn.style.opacity = "0.85";
-  };
-
-  recognition.onend = () => {
-    recognizing = false;
-    recordBtn.textContent = '🎙️';
-    recordBtn.style.opacity = "1";
-  };
-
-  recognition.onerror = (e) => {
-    recognizing = false;
-    recordBtn.textContent = '🎙️';
-    console.error('Speech recognition error:', e.error || e.message);
-  };
-
-  recognition.onresult = (e) => {
-    const transcript = e.results[0][0].transcript;
-    submitChat(transcript); 
-  };
-
-  recordBtn.onclick = () => {
-    if (recognizing) {
-      recognition.stop();
-      return;
-    }
-    try {
-      recognition.start();
-    } catch (err) {
-      console.warn('Recognition start issue', err);
-    }
-  };
+    recognition.onstart = () => {
+        recognizing = true;
+        recordBtn.textContent = '🔴 Recording...';
+        recordBtn.style.backgroundColor = '#ff005a';
+    };
+    recognition.onend = () => {
+        recognizing = false;
+        recordBtn.textContent = '🎙️ Record';
+        recordBtn.style.backgroundColor = '#222';
+    };
+    recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        submitChat(transcript); 
+    };
 } else {
-  recordBtn.onclick = () => alert('Voice not supported. Use Chrome/Edge.');
+    recordBtn.onclick = () => alert('Voice not supported. Use Chrome/Edge.');
 }
 
 // --- Utility Functions ---
-
 function escapeHtml(s){ 
     return String(s).replace(/[&<>"']/g, (m)=>({ 
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' 
     })[m]); 
 }
 
-// FIX: Custom Error Display
 function displayError(message) {
     const errorHtml = `
-        <span style="color:var(--accent); font-family:'Courier New', monospace; font-size:1.1em;">
-            &lt;! **ERROR** : &gt;
+        <span style="color:var(--accent); font-family:monospace; font-size:1.1em;">
+            &lt;! **CRITICAL ERROR** : &gt;
         </span>
         <br>
         <span style="color:#f90; font-weight:bold;">
@@ -106,17 +99,17 @@ function markdownToHtml(rawText) {
     let html = escapeHtml(rawText);
     html = html.replace(/\n/g, '<br>');
 
-    // Code Blocks
+    // Code blocks
     html = html.replace(/```([\s\S]*?)```/g, (match, codeContent) => {
         codeContent = codeContent.replace(/^<br>/, '');
         return `<div class="code-container"><pre><code class="copyable-code">${codeContent}</code></pre></div>`;
     });
 
-    // Basic Markdown: Bold and Italics
+    // Bold / Italic
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    // ZIP Download Tags
+
+    // ZIP response tag
     const ZIP_START_TAG = /---ZIP_RESPONSE:([\w\d\.-]+)---<br>([\s\S]*?)<br>---END_ZIP---/;
     let zipMatch;
     if (zipMatch = html.match(ZIP_START_TAG)) {
@@ -125,14 +118,14 @@ function markdownToHtml(rawText) {
         const buttonHtml = `<a href="#" onclick="downloadBase64File('${base64Data}', '${fileName}', 'application/zip'); return false;" class="download-btn zip-download-btn">💾 Download ${fileName}</a>`;
         html = html.replace(zipMatch[0], buttonHtml);
     }
-    
-    // Single File Download Tags
+
     const FILE_START_TAG = /---FILE:([\w\d\.-]+)---<br>([\s\S]*?)<br>---END FILE---/;
     let fileMatch;
     if (fileMatch = html.match(FILE_START_TAG)) {
         const fileName = fileMatch[1];
-        const fileContent = fileMatch[2].replace(/<br>/g, '\n'); 
-        const buttonHtml = `<a href="#" onclick="downloadFileContent('${fileContent}', '${fileName}', 'text/plain'); return false;" class="download-btn file-download-btn">⬇️ Download ${fileName}</a>`;
+        const fileContent = fileMatch[2].replace(/<br>/g, '\n');
+        // CRITICAL FIX: Escape content before passing to JS function
+        const buttonHtml = `<a href="#" onclick="downloadFileContent('${escapeHtml(fileContent)}', '${fileName}', 'text/plain'); return false;" class="download-btn file-download-btn">⬇️ Download ${fileName}</a>`;
         html = html.replace(fileMatch[0], buttonHtml);
     }
 
@@ -166,7 +159,7 @@ function appendMessage(role, html) {
   div.className = `msg ${role}`;
   div.innerHTML = html;
   chatEl.appendChild(div);
-  chatEl.scrollTop = chatEl.scrollHeight;
+  chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: 'smooth' }); // Smooth scroll
   return div;
 }
 
@@ -175,7 +168,7 @@ async function typeWriter(el, htmlContent, speed = 12) {
     el.innerHTML = ''; 
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
-    const fullText = tempDiv.textContent; 
+    const fullText = tempDiv.textContent || '';
 
     for (let i = 0; i < fullText.length; i++) {
         el.textContent = fullText.substring(0, i + 1);
@@ -186,7 +179,7 @@ async function typeWriter(el, htmlContent, speed = 12) {
 
     const finalRenderedText = fullText.toLowerCase(); 
 
-    if (finalRenderedText.includes('interested in joining the team') || finalRenderedText.includes('submission form is available below') || finalRenderedText.includes('provide your email or whatsapp number')) {
+    if (finalRenderedText.includes('interested in joining the team') || finalRenderedText.includes('submission form is available below')) {
         devFormContainer.style.display = 'flex';
         chatEl.scrollTop = chatEl.scrollHeight;
     }
@@ -194,13 +187,24 @@ async function typeWriter(el, htmlContent, speed = 12) {
 
 
 // --- Main Chat Submission Logic ---
-
 async function submitChat(message) {
-    if(isSending) return; // Prevent double submits
+    if(isSending) return; 
     isSending = true;
 
+    // Hide actions menu and dev form
+    floatingActions.style.display = 'none';
     devFormContainer.style.display = 'none';
     
+    // Check if we need to rename the chat BEFORE submission
+    const currentTitle = chatHistory[activeChatId]?.title;
+    if (currentTitle === 'New Chat' || currentTitle === 'Untitled Chat' || !currentTitle) {
+        // CRITICAL FIX: Set the chat title to the first 30 chars of the new message
+        const newTitle = message.substring(0, 30) + (message.length > 30 ? '...' : '');
+        chatHistory[activeChatId] = chatHistory[activeChatId] || { history: [] };
+        chatHistory[activeChatId].title = newTitle;
+        currentChatTitleEl.textContent = newTitle;
+    }
+
     let userMessageHtml = escapeHtml(message);
     if (uploadedFileBase64) {
         userMessageHtml += `<br><em>[File: ${uploadedFileMimeType} attached]</em>`;
@@ -229,8 +233,6 @@ async function submitChat(message) {
     partsArray.push({ text: textPrompt });
 
     const historyForAPI = chatHistory[activeChatId]?.history || [];
-    
-    // Send full history + the new user message
     const contentsToSend = [...historyForAPI.map(item => ({role: item.role, parts: item.parts})), 
                             { role: 'user', parts: partsArray }];
 
@@ -244,24 +246,19 @@ async function submitChat(message) {
     inputEl.style.height = '44px'; 
     uploadedFileBase64 = null;
     uploadedFileMimeType = null;
-    chooseFileBtn.textContent = 'Attach File';
-    chooseFileBtn.classList.remove('file-ready');
 
     const aiDiv = appendMessage('ai', '<span class="typing">...</span>');
     const span = aiDiv.querySelector('span');
     
-    // Enhanced UX Feedback
+    // Enhanced UX Feedback (Preserved)
     const promptLower = textPrompt.toLowerCase();
-
-    if (promptLower.includes('zip file') || 
-        promptLower.includes('project file') ||
-        promptLower.includes('create a project')) {
-        span.textContent = 'AtomicEnd is generating large project package (this may take a moment)...';
+    if (promptLower.includes('zip file') || promptLower.includes('project file') || promptLower.includes('create a project')) {
+        span.textContent = 'AtomicEnd is generating a large, multi-file project package...';
+    } else if (promptLower.includes('deep research') || promptLower.includes('guided study')) {
+        span.textContent = 'AtomicEnd is initiating deep research and analysis...';
     } else if (promptLower.includes('generate image') || promptLower.includes('create a picture')) {
-        // FIX: Better feedback for image generation
-        span.textContent = 'AtomicEnd is routing your request. Image generation is a premium feature under development...';
-    }
-    else {
+        span.textContent = 'AtomicEnd is routing your request. **Image generation is a premium service and currently under integration.**';
+    } else {
         span.textContent = 'AtomicEnd is processing...';
     }
 
@@ -274,7 +271,7 @@ async function submitChat(message) {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.error || 'Server returned an error.');
         }
 
@@ -284,14 +281,12 @@ async function submitChat(message) {
         const aiResponsePart = { role: 'model', parts: [{ text: data.response }] };
         const userPart = { role: 'user', parts: partsArray }; 
 
+        // If the chat was just created/renamed above, it already has a title.
         if (!chatHistory[activeChatId]) {
-            chatHistory[activeChatId] = {
-                title: message.substring(0, 30) + (message.length > 30 ? '...' : ''),
-                // FIX: If the chat is new, ensure the first message is the AI initial one, 
-                // but we only push the user/model parts for the API's sake.
-                history: []
-            };
+            // Should not happen if the check above runs correctly, but for safety:
+            chatHistory[activeChatId] = { title: currentChatTitleEl.textContent, history: [] };
         }
+        
         chatHistory[activeChatId].history.push(userPart, aiResponsePart);
         
         localStorage.setItem('atomicEndChats', JSON.stringify(chatHistory));
@@ -304,22 +299,23 @@ async function submitChat(message) {
         await typeWriter(span, finalHtml, 12);
 
     } catch (error) {
-        // FIX: Custom Error Message Display
         const errorMessage = error.message.includes("400") ? 
-            "A technical error occurred while connecting to the core AI. This may be due to unsupported file types, system load, or rate limits." : 
+            "A core AI technical error occurred. This may be due to unsupported file types, system load, or rate limits." : 
             error.message;
         
-        span.remove(); // Remove the "processing..." span
+        span.remove(); 
         displayError(errorMessage);
         console.error('Chat submission error:', error);
     } finally {
         isSending = false;
+        // Reset send button appearance
+        sendBtn.innerHTML = '▲'; 
+        sendBtn.style.backgroundColor = 'var(--send-btn-bg)';
     }
 }
 
 
-// --- Multi-Chat Functions (Renaming included) ---
-
+// --- Multi-Chat Functions ---
 function renderChatList() {
     chatList.innerHTML = '';
     const chatIds = Object.keys(chatHistory);
@@ -329,6 +325,7 @@ function renderChatList() {
         return;
     }
 
+    // Sort by session ID timestamp (newest first)
     chatIds.sort((a, b) => b.substring(8) - a.substring(8)); 
 
     chatIds.forEach(id => {
@@ -345,6 +342,9 @@ function renderChatList() {
                 chat.title = newTitle.trim();
                 localStorage.setItem('atomicEndChats', JSON.stringify(chatHistory));
                 renderChatList(); 
+                if (id === activeChatId) {
+                    currentChatTitleEl.textContent = newTitle.trim();
+                }
             }
         };
 
@@ -353,22 +353,22 @@ function renderChatList() {
 }
 
 function loadChat(chatId) {
-    if (chatId === activeChatId && chatId !== 'default') return; // Prevent reload spam
-
     activeChatId = chatId;
     localStorage.setItem('atomicEndActiveChatId', chatId);
     
     chatEl.innerHTML = '';
+    currentChatTitleEl.textContent = chatHistory[chatId]?.title || 'New Chat';
     
+    // Always append the initial AI message when loading a chat
+    appendMessage('ai', markdownToHtml(INITIAL_AI_MSG));
+
     const chat = chatHistory[chatId];
     
-    // FIX: Always append the initial AI message when loading a chat
-    appendMessage('ai', INITIAL_AI_MSG);
-
     if (chat && chat.history) {
-        chat.history.forEach(turn => {
+        let historyToRender = chat.history;
+
+        historyToRender.forEach(turn => {
             if (turn.role === 'user' && turn.parts[0].text) {
-                // Determine if file was attached to display the file-ready tag in history
                 let userHtml = escapeHtml(turn.parts[0].text);
                 const filePart = turn.parts.find(p => p.inlineData);
                 if (filePart) {
@@ -385,6 +385,7 @@ function loadChat(chatId) {
     renderChatList();
     chatEl.scrollTop = chatEl.scrollHeight;
     
+    // Close sidebar on mobile after loading new chat
     if (window.innerWidth < 768) {
         sidebar.classList.remove('open');
     }
@@ -392,42 +393,42 @@ function loadChat(chatId) {
 
 function startNewChat(id = null, title = 'New Chat') {
     const newId = id || `session_${Date.now()}`; 
-    
-    // The history array is now only for API calls, the initial message is rendered separately
-    chatHistory[newId] = { 
-        title: title, 
-        history: [] // FIX: Ensure new chat starts with NO history for API calls
-    };
-    
+    // New chats start with a generic title that will be updated on first message
+    chatHistory[newId] = { title: title, history: [] };
     loadChat(newId);
 }
 
-// NEW: Clear History Function
-clearHistoryBtn.onclick = () => {
-    if (confirm("Are you sure you want to clear ALL chat history? This cannot be undone.")) {
-        localStorage.removeItem('atomicEndChats');
-        localStorage.removeItem('atomicEndActiveChatId');
-        chatHistory = {};
-        activeChatId = 'default';
-        
-        startNewChat('default', 'General Chat');
-        alert("All history cleared. Starting a fresh chat session.");
+// --- Event Listeners and Initial Load ---
+
+// Toggle Floating Actions Menu
+showActionsBtn.onclick = () => {
+    floatingActions.style.display = floatingActions.style.display === 'flex' ? 'none' : 'flex';
+    devFormContainer.style.display = 'none'; // Hide form if actions shown
+};
+
+// Dev Team Button in Floating Menu
+devTeamBtn.onclick = () => {
+    floatingActions.style.display = 'none';
+    const formStyle = devFormContainer.style.display;
+    devFormContainer.style.display = formStyle === 'flex' ? 'none' : 'flex';
+    if (devFormContainer.style.display === 'flex') {
+        chatEl.scrollTop = chatEl.scrollHeight;
     }
 };
 
-
-// --- Event Listeners and Initial Load ---
-
+// Auto resize textarea
 inputEl.addEventListener('input', () => {
     inputEl.style.height = 'auto'; 
-    inputEl.style.height = inputEl.scrollHeight + 'px';
-    chatEl.scrollTop = chatEl.scrollHeight; 
+    // Limit max height for large screens
+    inputEl.style.height = `${Math.min(inputEl.scrollHeight, 220)}px`;
 });
 
+// Send button click
 sendBtn.onclick = () => {
     submitChat(inputEl.value.trim());
 };
 
+// Enter key to send (Shift+Enter for newline)
 inputEl.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -435,57 +436,71 @@ inputEl.addEventListener('keydown', (e) => {
     }
 });
 
+// File Upload Logic
 chooseFileBtn.onclick = () => {
+    floatingActions.style.display = 'none'; // Hide menu
     fileInput.click();
 };
 
 fileInput.onchange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-        // FIX: BLOCK ZIP files and use custom error message
-        if (file.type === 'application/zip' || file.name.endsWith('.zip')) {
-            alert("ZIP files cannot be attached directly for analysis. Please extract the files or attach a single code file/image.");
-            fileInput.value = ''; 
-            return;
-        }
+    if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            if (file.size > 20 * 1024 * 1024) { 
-                alert("File size exceeds 20MB limit for upload. Please use a smaller file.");
-                fileInput.value = ''; 
-                return;
-            }
-
-            uploadedFileBase64 = event.target.result.split(',')[1];
-            uploadedFileMimeType = file.type;
-            
-            chooseFileBtn.textContent = `File Ready: ${file.name}`;
-            chooseFileBtn.classList.add('file-ready');
-        };
-        reader.readAsDataURL(file);
+    if (file.type === 'application/zip' || file.name.endsWith('.zip')) {
+        alert("AtomicEnd cannot process ZIP files directly. Please extract and upload a single code file or image.");
+        fileInput.value = ''; 
+        return;
     }
+
+    if (file.size > 20 * 1024 * 1024) { 
+        alert("File size exceeds 20MB limit for upload. Please use a smaller file.");
+        fileInput.value = ''; 
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        uploadedFileBase64 = event.target.result.split(',')[1];
+        uploadedFileMimeType = file.type;
+        
+        // Give user feedback on the Send button
+        sendBtn.innerHTML = '📎'; 
+        sendBtn.style.backgroundColor = '#ffc107'; // Yellow/Orange indicator
+    };
+    reader.readAsDataURL(file);
 };
 
+// Sidebar Controls
 menuBtn.onclick = () => {
-    sidebar.classList.toggle('open');
+    sidebar.classList.add('open');
 };
-
+closeSidebarBtn.onclick = () => {
+    sidebar.classList.remove('open');
+};
 newChatBtn.onclick = () => {
     startNewChat();
 };
-
-signInBtn.onclick = () => {
-    alert("Sign-in feature coming soon! This will enable user-specific settings, cloud history backup, and premium features.");
+clearHistoryBtn.onclick = () => {
+    if (confirm("Are you sure you want to clear ALL chat history?")) {
+        localStorage.removeItem('atomicEndChats');
+        localStorage.removeItem('atomicEndActiveChatId');
+        chatHistory = {};
+        activeChatId = 'default';
+        startNewChat('default', 'General Chat');
+        alert("All history cleared. Starting a fresh chat session.");
+    }
 };
 
-// ... [KEEP YOUR DEV SUBMIT BUTTON LOGIC HERE] ...
+signInBtn.onclick = () => {
+    alert("Account Settings and Cloud Sync feature coming soon!");
+};
+
+// Dev Submission Logic (Preserved)
 devSubmitBtn.onclick = async () => {
     const contact = devContactInput.value.trim();
     const message = devMessageInput.value.trim();
-
     if (contact.length < 5 || message.length < 10) {
-        alert("Please provide a valid contact (email/number) and a short message (min 10 characters).");
+        alert("Please provide a valid contact and a message.");
         return;
     }
     
