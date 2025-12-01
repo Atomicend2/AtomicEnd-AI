@@ -1,12 +1,12 @@
 :root{
   --bg:#000000;
   --neon:#22ccff;
-  --accent:#ff47a1;
+  --accent:#ff47a1; /* Pink/Accent for User Chat */
   --muted:#999;
   --panel:#151515;
   --sidebar-bg: #0d0d0d;
-  --chat-bubble-ai: #1c1c1c;
-  --chat-bubble-user: #004c4c;
+  --chat-bubble-ai: #1c1c1c; /* Dark Grey for AI Chat */
+  --chat-bubble-user: var(--accent);
   --send-btn-bg: #008c8c;
 }
 
@@ -21,7 +21,7 @@ body{
     display:flex;
     height:100vh;
     width:100vw; 
-    overflow: hidden; 
+    overflow: hidden; /* Prevent scrolling on body, let chat-container handle it */
 }
 
 /* ============== APP LAYOUT ============== */
@@ -29,21 +29,22 @@ body{
     flex-grow:1;
     display:flex;
     flex-direction:column;
-    height:100vh; /* CRITICAL FIX 1: Ensure main content takes full viewport height */
+    height:100vh; /* Ensure main content takes full viewport height */
     transition:transform .3s;
     background-color:var(--bg);
     width: 100%;
 }
 
-/* HEADER BAR (Fixed Height) */
+/* HEADER BAR (FIXED HEIGHT / NO CROPPING) */
 #main-header{
     display:flex;
     align-items:center;
-    padding:10px 15px;
+    padding:12px 15px; /* CRITICAL FIX: Increased padding for touch targets */
     background-color:var(--sidebar-bg);
     border-bottom:1px solid #1c1c1c;
     color:white;
-    flex-shrink: 0; /* CRITICAL FIX 3: Ensure header doesn't shrink */
+    flex-shrink: 0; /* CRITICAL FIX: Ensure header is never cropped */
+    z-index: 10;
 }
 #current-chat-title{
     margin:0;
@@ -71,7 +72,6 @@ body{
     padding:15px;
     display:flex;
     flex-direction:column;
-    /* Mobile First: Fixed and off-screen */
     position:fixed;
     height:100vh;
     top: 0;
@@ -117,9 +117,9 @@ body{
     background:var(--chat-bubble-ai);color:white;
 }
 
-/* CHAT CONTAINER (CRITICAL FIX 2: Must grow to fill space) */
+/* CHAT CONTAINER (Fills space between header and footer) */
 #chat-container {
-    flex-grow:1; /* CRITICAL FIX 2: This must be 1 to use all vertical space */
+    flex-grow:1; /* CRITICAL FIX: This must be 1 to use all vertical space */
     overflow-y:auto;
     padding:15px 10px;
 }
@@ -130,6 +130,72 @@ body{
     padding-bottom:20px;
 }
 
+/* =============== CHAT BUBBLE STYLING (DIFFERENT COLORS & DESIGN) =============== */
+
+.msg{
+    max-width:90%;
+    padding:12px;
+    margin-bottom:10px;
+    line-height:1.5;
+    word-wrap:break-word;
+    /* General Styling */
+    border-radius:20px;
+    font-size:1.0em;
+    font-weight: 500;
+}
+
+/* AI Message (System/AtomicEnd - Left Aligned) */
+.msg.ai{
+    background-color:var(--chat-bubble-ai); 
+    color:white;
+    margin-right:auto;
+    /* Stylish Design: Sharp top-left corner */
+    border-top-left-radius: 5px; 
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+/* User Message (Your Message - Right Aligned) */
+.msg.user{
+    background-color:var(--accent); 
+    color:var(--sidebar-bg); /* Dark text on bright background */
+    margin-left:auto;
+    /* Stylish Design: Sharp top-right corner */
+    border-top-left-radius: 20px;
+    border-top-right-radius: 5px; 
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+/* Code and Download Buttons */
+.code-container{
+    background-color:#000000;
+    border-radius:8px;
+    padding:5px;
+    margin-top:10px;
+    overflow-x:auto;
+}
+pre code{
+    color:var(--neon);
+    font-size:0.9em;
+}
+.download-btn{
+    display:inline-block;
+    padding:5px 10px;
+    border-radius:5px;
+    text-decoration:none;
+    margin-top:5px;
+    font-size:0.9em;
+    font-weight:600;
+}
+.zip-download-btn{
+    background:#ffc107; color:black;
+}
+.file-download-btn{
+    background:var(--send-btn-bg); color:white;
+}
+
 
 /* ========== INPUT BAR (Fixed Height) ========== */
 #input-footer{
@@ -138,7 +204,7 @@ body{
     border-top:1px solid #1c1c1c;
     display:flex;flex-direction:column;
     align-items:center;position:relative;
-    flex-shrink: 0; /* CRITICAL FIX 3: Ensure footer doesn't shrink when contents scroll */
+    flex-shrink: 0; /* CRITICAL FIX: Ensure footer doesn't shrink */
 }
 #input-area{
     display:flex;width:100%;max-width:800px;
@@ -176,6 +242,80 @@ body{
 }
 .floating-action-btn:hover{background:#333;}
 
+
+/* =============== FORM OVERLAY STYLING (CRITICAL FIX) =============== */
+
+/* Full screen overlay container */
+#devFormOverlay {
+    display: none; /* Controlled by JS */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9); /* Semi-transparent blackout */
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Centered Form Modal */
+#devFormContainer {
+    display: flex; 
+    flex-direction: column;
+    width: 90%;
+    max-width: 400px;
+    padding: 20px;
+    background: var(--sidebar-bg);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255, 71, 161, 0.5); /* Pink shadow */
+    position: relative;
+}
+
+#devFormContainer h3 {
+    color: var(--accent);
+    margin-top: 0;
+    font-size: 1.4em;
+    text-align: center;
+}
+
+#devFormContainer input, #devFormContainer textarea {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    background: #222;
+    color: white;
+    font-size: 1em;
+    resize: none;
+}
+
+#devSubmitBtn {
+    background: var(--accent);
+    color: var(--sidebar-bg);
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#devSubmitBtn:hover {
+    background: #ff7fbb;
+}
+
+#closeDevFormBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.5em;
+    cursor: pointer;
+    line-height: 1;
+}
 
 /* ==============================
         RESPONSIVENESS (Desktop Fixes)
