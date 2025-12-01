@@ -1,0 +1,21 @@
+{
+    "name": "Atomic End Elite Coder",
+    "short_name": "AtomicEnd AI",
+    "description": "The Elite AI Coder platform by Atomic. Get code generated instantly.",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#ff47a1",
+    "icons": [
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
