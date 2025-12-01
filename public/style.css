@@ -4,55 +4,242 @@
   --accent:#ff2fa3;
   --muted:#889;
   --panel:#071027;
+  --sidebar-bg: #1a1a2e;
 }
 
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(180deg,#010013 0%, #030114 100%);font-family:Inter,ui-sans-serif,system-ui,monospace;color:var(--neon);display:flex;align-items:center;justify-content:center;height:100vh}
-#app{width:92%;max-width:1100px;background:rgba(0,0,0,0.35);border-radius:12px;padding:18px;border:1px solid rgba(0,255,255,0.05);box-shadow:0 10px 40px rgba(0,0,0,0.6)}
-header{display:flex;align-items:baseline;gap:18px}
-header h1{margin:0;font-size:26px}
-header span{color:var(--accent);margin-left:6px}
-header p{margin:0;color:var(--muted);font-size:12px}
+body{
+    margin:0;
+    background:linear-gradient(180deg,#010013 0%, #030114 100%);
+    font-family:Inter,ui-sans-serif,system-ui,monospace;
+    color:var(--neon);
+    display:flex;
+    height:100vh;
+    overflow: hidden; 
+}
 
-main{margin-top:14px;border-radius:8px;background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.45));height:58vh;padding:12px;overflow:auto;border:1px solid rgba(255,255,255,0.02)}
-#chat{height:100%;overflow:auto;padding-right:6px}
+/* --- App Layout (Main Content and Sidebar) --- */
+#main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    transition: margin-left 0.3s;
+    background-color: var(--bg);
+}
 
-.msg {margin:8px 0;padding:12px;border-radius:8px;max-width:78%}
+#chat-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 12px 18px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.45));
+}
+#chat{
+    padding-right:6px;
+    height: 100%;
+}
+
+/* Header */
+#main-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 18px;
+    background-color: var(--panel);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+#main-header h1{
+    margin:0;
+    font-size:26px;
+    flex-grow: 1; 
+}
+#main-header span{
+    color:var(--accent);
+    margin-left:6px;
+}
+.version-tag {
+    color: var(--muted);
+    font-size: 12px;
+    margin-left: 10px;
+}
+#menuBtn {
+    background: none;
+    border:var(--accent);
+    color: var(--neon);
+    font-size: 24px;
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+/* --- Sidebar Styles --- */
+#sidebar {
+    width: 280px;
+    min-width: 280px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid #333;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%); 
+    position: absolute;
+    height: 100vh;
+    z-index: 200;
+    transition: transform 0.3s ease-out;
+}
+
+#sidebar.open {
+    transform: translateX(0);
+}
+
+/* User Info and Sign-in Placeholder */
+#user-info {
+    padding: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 1px solid #333;
+}
+
+#signInBtn {
+    padding: 8px 15px;
+    background-color: #4285F4; 
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Chat List Styling */
+.new-chat-btn {
+    padding: 12px;
+    margin-bottom: 15px;
+    background-color: #9370DB; 
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+}
+
+#chat-list-container {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.chat-thread-item {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #ccc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.9em;
+}
+
+.chat-thread-item:hover, .chat-thread-item.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--neon);
+}
+
+/* NEW: Clear History Button */
+.clear-history-btn {
+    padding: 10px;
+    margin-top: 15px;
+    background-color: #444; 
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+/* --- Message and Input Styles (Responsive Fix) --- */
+.msg {margin:8px 0;padding:12px;border-radius:8px;max-width:85%}
 .msg.ai{background:linear-gradient(90deg, rgba(0,240,255,0.06), rgba(255,47,163,0.02));border-left:4px solid var(--neon);color:#dff;text-align:left;}
 .msg.user{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));border-right:4px solid var(--accent);margin-left:auto;color:#fff;text-align:right}
 
-footer{display:flex;gap:10px;margin-top:12px;align-items:center;flex-direction:column;} /* Changed to column to stack controls */
-.chat-controls-wrapper {display:flex; width: 100%; gap: 10px; align-items:center;} /* New wrapper for input/buttons */
 
-#input{flex:1;padding:12px;border-radius:8px;background:transparent;border:1px solid rgba(0,255,255,0.06);color:var(--neon);resize:none}
-#controls{display:flex;gap:8px}
+#input-footer {
+    width: 100%;
+    padding: 10px 18px;
+    background-color: var(--panel);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+}
 
-/* Button Styling */
-#sendBtn{background:linear-gradient(180deg,#00d4ff,#0084ff);border:none;padding:12px 18px;border-radius:8px;color:#001;cursor:pointer;font-weight:700}
-#recordBtn{background:linear-gradient(180deg,#ff4d8e,#ff005a);border:none;padding:12px 14px;border-radius:8px;color:#fff;cursor:pointer;font-weight:700}
-#chooseFileBtn{background:#2a4;border:none;padding:12px 14px;border-radius:8px;color:#fff;cursor:pointer;font-weight:700;white-space:nowrap;}
-#chooseFileBtn.file-ready {background:#fa0; color:#000;} /* Highlight when file is ready */
+/* Responsive Input Area (The Fix) */
+#input-area {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    align-items: flex-end; 
+}
+
+#input {
+    flex-grow: 1;
+    padding: 12px;
+    border-radius: 8px;
+    background: #111a33; 
+    border: 1px solid rgba(0,255,255,0.06);
+    color: var(--neon);
+    resize: none; 
+    min-height: 44px; 
+    max-height: 150px; 
+    overflow-y: auto; 
+    transition: height 0.2s ease;
+    line-height: 1.2;
+}
+
+/* Action Buttons */
+.action-btn {
+    background: linear-gradient(180deg,#00d4ff,#0084ff);
+    border: none;
+    padding: 12px 14px;
+    border-radius: 8px;
+    color: #001;
+    cursor: pointer;
+    font-weight: 700;
+    white-space: nowrap;
+    height: 44px; 
+}
+.send-btn {
+    padding: 12px 18px; 
+}
+#recordBtn{
+    background: linear-gradient(180deg,#ff4d8e,#ff005a);
+    color: #fff;
+    padding: 12px 14px;
+}
+#chooseFileBtn{
+    background:#2a4;
+    color:#fff;
+    padding: 12px 14px;
+}
+#chooseFileBtn.file-ready {
+    background:#fa0; 
+    color:#000;
+} 
 button:active{transform:translateY(1px)}
 
-/* --- Code Block Styling for Copyability --- */
+/* Code Block Styling */
 .msg.ai pre {
-    background-color: #1a233b; /* Darker panel background */
+    background-color: #1a233b; 
     border: 1px solid rgba(0,240,255,0.1);
     border-radius: 5px;
     padding: 10px;
     margin: 10px 0;
-    overflow-x: auto; /* Allows horizontal scrolling for wide lines */
+    overflow-x: auto; 
     font-size: 0.9em;
-    color: #fff; /* Code text color */
+    color: #fff; 
 }
-
-/* Ensure code within pre doesn't break formatting */
 .msg.ai pre code {
     white-space: pre-wrap; 
     font-family: monospace;
 }
-
-/* Download Buttons generated in AI response */
 .download-btn {
     display: block; 
     margin-top: 10px; 
@@ -72,9 +259,9 @@ button:active{transform:translateY(1px)}
     color: #001;
 }
 
-/* --- Developer Form Styling --- */
+/* Developer Form Styling */
 #devFormContainer {
-    display: none; /* Controlled by client.js */
+    display: none; 
     flex-direction: column;
     width: 100%;
     padding: 15px;
@@ -103,4 +290,18 @@ button:active{transform:translateY(1px)}
     border: none;
     border-radius: 4px;
     cursor: pointer;
+}
+
+/* Desktop/Tablet Optimization */
+@media (min-width: 768px) {
+    body {
+        justify-content: flex-start;
+    }
+    #sidebar {
+        position: static;
+        transform: translateX(0);
+    }
+    #menuBtn {
+        display: none;
+    }
 }
