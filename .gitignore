@@ -1,0 +1,8 @@
+# Dependencies
+/node_modules
+
+# API Key / Environment variables
+.env
+
+# Logs
+team_submissions.log

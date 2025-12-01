@@ -1,0 +1,106 @@
+:root{
+  --bg:#030114;
+  --neon:#00f0ff;
+  --accent:#ff2fa3;
+  --muted:#889;
+  --panel:#071027;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#010013 0%, #030114 100%);font-family:Inter,ui-sans-serif,system-ui,monospace;color:var(--neon);display:flex;align-items:center;justify-content:center;height:100vh}
+#app{width:92%;max-width:1100px;background:rgba(0,0,0,0.35);border-radius:12px;padding:18px;border:1px solid rgba(0,255,255,0.05);box-shadow:0 10px 40px rgba(0,0,0,0.6)}
+header{display:flex;align-items:baseline;gap:18px}
+header h1{margin:0;font-size:26px}
+header span{color:var(--accent);margin-left:6px}
+header p{margin:0;color:var(--muted);font-size:12px}
+
+main{margin-top:14px;border-radius:8px;background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.45));height:58vh;padding:12px;overflow:auto;border:1px solid rgba(255,255,255,0.02)}
+#chat{height:100%;overflow:auto;padding-right:6px}
+
+.msg {margin:8px 0;padding:12px;border-radius:8px;max-width:78%}
+.msg.ai{background:linear-gradient(90deg, rgba(0,240,255,0.06), rgba(255,47,163,0.02));border-left:4px solid var(--neon);color:#dff;text-align:left;}
+.msg.user{background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));border-right:4px solid var(--accent);margin-left:auto;color:#fff;text-align:right}
+
+footer{display:flex;gap:10px;margin-top:12px;align-items:center;flex-direction:column;} /* Changed to column to stack controls */
+.chat-controls-wrapper {display:flex; width: 100%; gap: 10px; align-items:center;} /* New wrapper for input/buttons */
+
+#input{flex:1;padding:12px;border-radius:8px;background:transparent;border:1px solid rgba(0,255,255,0.06);color:var(--neon);resize:none}
+#controls{display:flex;gap:8px}
+
+/* Button Styling */
+#sendBtn{background:linear-gradient(180deg,#00d4ff,#0084ff);border:none;padding:12px 18px;border-radius:8px;color:#001;cursor:pointer;font-weight:700}
+#recordBtn{background:linear-gradient(180deg,#ff4d8e,#ff005a);border:none;padding:12px 14px;border-radius:8px;color:#fff;cursor:pointer;font-weight:700}
+#chooseFileBtn{background:#2a4;border:none;padding:12px 14px;border-radius:8px;color:#fff;cursor:pointer;font-weight:700;white-space:nowrap;}
+#chooseFileBtn.file-ready {background:#fa0; color:#000;} /* Highlight when file is ready */
+button:active{transform:translateY(1px)}
+
+/* --- Code Block Styling for Copyability --- */
+.msg.ai pre {
+    background-color: #1a233b; /* Darker panel background */
+    border: 1px solid rgba(0,240,255,0.1);
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+    overflow-x: auto; /* Allows horizontal scrolling for wide lines */
+    font-size: 0.9em;
+    color: #fff; /* Code text color */
+}
+
+/* Ensure code within pre doesn't break formatting */
+.msg.ai pre code {
+    white-space: pre-wrap; 
+    font-family: monospace;
+}
+
+/* Download Buttons generated in AI response */
+.download-btn {
+    display: block; 
+    margin-top: 10px; 
+    padding: 8px 12px; 
+    border-radius: 4px; 
+    text-decoration: none; 
+    font-weight: bold;
+    text-align: center;
+    max-width: 95%;
+}
+.zip-download-btn {
+    background: #ff4d8e; 
+    color: #fff;
+}
+.file-download-btn {
+    background: #00d4ff; 
+    color: #001;
+}
+
+/* --- Developer Form Styling --- */
+#devFormContainer {
+    display: none; /* Controlled by client.js */
+    flex-direction: column;
+    width: 100%;
+    padding: 15px;
+    margin-top: 10px;
+    border: 1px dashed var(--accent);
+    border-radius: 8px;
+    gap: 10px;
+}
+#devFormContainer input, #devFormContainer textarea {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,47,163,0.3);
+    background: #111a33;
+    color: var(--neon);
+    font-family: inherit;
+    resize: none;
+}
+#devFormContainer textarea {
+    height: 60px;
+}
+#devFormContainer button {
+    background: var(--accent);
+    color: #fff;
+    font-weight: bold;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
