@@ -9,7 +9,6 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
-// client.js - AtomicEnd Multimodal UI logic (Combined Fixes with Toggle Menu)
 
 'use strict';
 
@@ -23,7 +22,6 @@ const fileInput = document.getElementById('fileInput');
 const currentChatTitleEl = document.getElementById('current-chat-title');
 const sidebar = document.getElementById('sidebar');
 const menuBtn = document.getElementById('menuBtn');
-// const closeSidebarBtn = document.getElementById('closeSidebarBtn'); // REMOVED
 const showActionsBtn = document.getElementById('showActionsBtn');
 const floatingActions = document.getElementById('floatingActions');
 const chooseFileBtn = document.getElementById('chooseFileBtn'); 
@@ -44,6 +42,9 @@ const devSubmitBtn = document.getElementById('devSubmitBtn');
 const devContactInput = document.getElementById('devContactInput');
 const devMessageInput = document.getElementById('devMessageInput');
 
+// NEW EDIT ELEMENTS
+const editActionsOverlay = document.getElementById('editActionsOverlay');
+const editMessageBtn = document.getElementById('editMessageBtn');
 
 // --- Session Management ---
 let chatHistory = JSON.parse(localStorage.getItem('atomicEndChats')) || {};
@@ -51,6 +52,7 @@ let activeChatId = localStorage.getItem('atomicEndActiveChatId') || 'default';
 let uploadedFileBase64 = null; 
 let uploadedFileMimeType = null;
 let isSending = false; 
+let messageToEditData = null; // Stores {chatId, index} for the message being edited
 
 const CHAT_ENDPOINT = '/chat'; 
 const INITIAL_AI_MSG = `Welcome to **AtomicEnd**, the Elite AI platform crafted by Atomic! I specialize in:
@@ -212,6 +214,69 @@ async function typeWriter(el, htmlContent, speed = 12) {
 }
 
 
+// --- Message Editing Logic ---
+
+// NEW: Shows the edit/delete options when a user message is clicked
+window.showEditActions = (chatId, messageIndex) => {
+    // Hide other floating menus
+    floatingActions.style.display = 'none';
+    devFormOverlay.style.display = 'none';
+
+    // Store the data for the message being edited
+    messageToEditData = { chatId, index: messageIndex };
+    
+    // Display the edit actions overlay
+    editActionsOverlay.style.display = 'flex';
+};
+
+// NEW: The actual editing process
+editMessageBtn.onclick = () => {
+    if (!messageToEditData) return;
+
+    const { chatId, index } = messageToEditData;
+    const chat = chatHistory[chatId];
+
+    if (!chat || index >= chat.history.length) return;
+
+    // The message we edit is always the 'text' part of the 'user' turn
+    const originalText = chat.history[index].parts[0].text;
+    
+    // Use the native prompt
+    const newText = prompt("Edit your message:", originalText);
+
+    editActionsOverlay.style.display = 'none'; // Hide the menu
+
+    if (newText && newText.trim() !== originalText) {
+        // 1. Update the stored user message text
+        chat.history[index].parts[0].text = newText.trim();
+        
+        // 2. Remove all subsequent messages (including the next AI response)
+        chat.history.splice(index + 1); 
+
+        // 3. Save the updated history
+        localStorage.setItem('atomicEndChats', JSON.stringify(chatHistory));
+
+        // 4. Reload the chat to show the edited message and truncated history
+        loadChat(chatId);
+        
+        // 5. Automatically submit the edited message to the AI
+        setTimeout(() => {
+            submitChat(newText.trim());
+        }, 50); 
+    }
+    messageToEditData = null; // Clear state
+};
+
+// NEW: Close the edit menu by clicking the overlay itself
+editActionsOverlay.onclick = (e) => {
+    // Only close if the click is directly on the overlay, not on the inner container
+    if (e.target.id === 'editActionsOverlay') {
+        editActionsOverlay.style.display = 'none';
+        messageToEditData = null;
+    }
+};
+
+
 // --- Main Chat Submission Logic ---
 async function submitChat(message) {
     if(isSending) return; 
@@ -220,6 +285,8 @@ async function submitChat(message) {
     // Hide actions menu and dev form
     floatingActions.style.display = 'none';
     devFormOverlay.style.display = 'none';
+    editActionsOverlay.style.display = 'none'; // Hide edit menu
+
     
     // Check if we need to rename the chat BEFORE submission
     const currentTitle = chatHistory[activeChatId]?.title;
@@ -344,7 +411,8 @@ function renderChatList() {
     const chatIds = Object.keys(chatHistory);
     
     if (chatIds.length === 0) {
-        startNewChat('default', 'General Chat');
+        // If history is empty, ensure one chat session exists
+        startNewChat('default', 'General Chat', false); // Do not reload the chat window
         return;
     }
 
@@ -390,14 +458,18 @@ function loadChat(chatId) {
     if (chat && chat.history) {
         let historyToRender = chat.history;
 
-        historyToRender.forEach(turn => {
+        historyToRender.forEach((turn, index) => { // Use index for editing
             if (turn.role === 'user' && turn.parts[0].text) {
                 let userHtml = escapeHtml(turn.parts[0].text);
                 const filePart = turn.parts.find(p => p.inlineData);
                 if (filePart) {
                     userHtml += `<br><em>[File: ${filePart.inlineData.mimeType} attached]</em>`;
                 }
-                appendMessage('user', userHtml);
+                
+                // NEW: Add click handler to show the edit menu for the user message
+                const userMsgDiv = appendMessage('user', userHtml);
+                userMsgDiv.onclick = () => showEditActions(chatId, index);
+
             } else if (turn.role === 'model' && turn.parts[0].text) {
                 const aiDiv = appendMessage('ai', '');
                 aiDiv.innerHTML = markdownToHtml(turn.parts[0].text);
@@ -417,6 +489,11 @@ function loadChat(chatId) {
 function startNewChat(id = null, title = 'New Chat') {
     const newId = id || `session_${Date.now()}`; 
     chatHistory[newId] = { title: title, history: [] };
+    
+    // Only persist and load if it's not the initial "default" chat load
+    if (id !== 'default') {
+        localStorage.setItem('atomicEndChats', JSON.stringify(chatHistory));
+    }
     loadChat(newId);
 }
 
@@ -424,8 +501,11 @@ function startNewChat(id = null, title = 'New Chat') {
 
 // Toggle Floating Actions Menu
 showActionsBtn.onclick = () => {
-    floatingActions.style.display = floatingActions.style.display === 'flex' ? 'none' : 'flex';
+    // Hide other floating menus
     devFormOverlay.style.display = 'none';
+    editActionsOverlay.style.display = 'none';
+    
+    floatingActions.style.display = floatingActions.style.display === 'flex' ? 'none' : 'flex';
 };
 
 // Dev Team Button in Floating Menu
@@ -503,7 +583,7 @@ menuBtn.onclick = () => {
     sidebar.classList.toggle('open');
 };
 
-// FIX: New Chat button logic. It uses startNewChat to ensure a clean session.
+// FIX: New Chat button logic.
 newChatBtn.onclick = () => {
     startNewChat(null, 'New Chat');
     if (window.innerWidth < 768) {
@@ -565,11 +645,10 @@ devSubmitBtn.onclick = async () => {
 
 // Initial load
 window.onload = () => {
-    if (!chatHistory[activeChatId]) {
-        startNewChat('default', 'General Chat');
+    if (!chatHistory[activeChatId]) {        startNewChat('default', 'General Chat');
     } else {
         loadChat(activeChatId); 
     }
     renderChatList();
     inputEl.focus();
-};
+};y
