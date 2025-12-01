@@ -1,4 +1,4 @@
-// client.js - AtomicEnd Multimodal UI logic (FINAL FIXES: Layout + Dynamic Chat Title + Voice Record + Form Overlay)
+// client.js - AtomicEnd Multimodal UI logic (Combined Fixes)
 
 'use strict';
 
@@ -25,7 +25,7 @@ const chatList = document.getElementById('chat-list');
 const clearHistoryBtn = document.getElementById('clearHistoryBtn'); 
 const signInBtn = document.getElementById('signInBtn');
 
-// Dev Form Elements (UPDATED)
+// Dev Form Elements
 const devFormOverlay = document.getElementById('devFormOverlay');
 const devFormContainer = document.getElementById('devFormContainer');
 const closeDevFormBtn = document.getElementById('closeDevFormBtn');
@@ -49,7 +49,7 @@ const INITIAL_AI_MSG = `Welcome to **AtomicEnd**, the Elite AI platform crafted 
 * **I do Guided Study** & Debugging.
 How can I assist you with your project today?`;
 
-// --- Voice Recognition Setup (FIXED) ---
+// --- Voice Recognition Setup ---
 let recognizing = false;
 let recognition = null;
 
@@ -78,7 +78,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     recordBtn.onclick = () => alert('Voice recognition is not supported in this browser. Please use Chrome/Edge.');
 }
 
-// CRITICAL FIX: Add event listener to start/stop recognition
 recordBtn.addEventListener('click', () => {
     if (!recognition) {
         alert('Voice recognition is not available.');
@@ -87,9 +86,7 @@ recordBtn.addEventListener('click', () => {
 
     if (recognizing) {
         recognition.stop();
-        // recognition.onend will handle UI reset
     } else {
-        // Must be attached to a user action to prompt for mic permission
         recognition.start(); 
     }
 });
@@ -144,7 +141,6 @@ function markdownToHtml(rawText) {
     if (fileMatch = html.match(FILE_START_TAG)) {
         const fileName = fileMatch[1];
         const fileContent = fileMatch[2].replace(/<br>/g, '\n');
-        // CRITICAL FIX: Escape content before passing to JS function
         const buttonHtml = `<a href="#" onclick="downloadFileContent('${escapeHtml(fileContent)}', '${fileName}', 'text/plain'); return false;" class="download-btn file-download-btn">⬇️ Download ${fileName}</a>`;
         html = html.replace(fileMatch[0], buttonHtml);
     }
@@ -184,7 +180,7 @@ function appendMessage(role, html) {
 }
 
 async function typeWriter(el, htmlContent, speed = 12) {
-    devFormOverlay.style.display = 'none'; // CRITICAL FIX: Hide the overlay instead of container
+    devFormOverlay.style.display = 'none'; 
     el.innerHTML = ''; 
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
@@ -200,7 +196,7 @@ async function typeWriter(el, htmlContent, speed = 12) {
     const finalRenderedText = fullText.toLowerCase(); 
 
     if (finalRenderedText.includes('interested in joining the team') || finalRenderedText.includes('submission form is available below')) {
-        devFormOverlay.style.display = 'flex'; // CRITICAL FIX: Show the overlay
+        devFormOverlay.style.display = 'flex';
     }
 }
 
@@ -212,12 +208,11 @@ async function submitChat(message) {
 
     // Hide actions menu and dev form
     floatingActions.style.display = 'none';
-    devFormOverlay.style.display = 'none'; // Use overlay visibility
+    devFormOverlay.style.display = 'none';
     
     // Check if we need to rename the chat BEFORE submission
     const currentTitle = chatHistory[activeChatId]?.title;
     if (currentTitle === 'New Chat' || currentTitle === 'Untitled Chat' || !currentTitle) {
-        // Set the chat title to the first 30 chars of the new message
         const newTitle = message.substring(0, 30) + (message.length > 30 ? '...' : '');
         chatHistory[activeChatId] = chatHistory[activeChatId] || { history: [] };
         chatHistory[activeChatId].title = newTitle;
@@ -300,9 +295,7 @@ async function submitChat(message) {
         const aiResponsePart = { role: 'model', parts: [{ text: data.response }] };
         const userPart = { role: 'user', parts: partsArray }; 
 
-        // If the chat was just created/renamed above, it already has a title.
         if (!chatHistory[activeChatId]) {
-            // Should not happen if the check above runs correctly, but for safety:
             chatHistory[activeChatId] = { title: currentChatTitleEl.textContent, history: [] };
         }
         
@@ -412,7 +405,6 @@ function loadChat(chatId) {
 
 function startNewChat(id = null, title = 'New Chat') {
     const newId = id || `session_${Date.now()}`; 
-    // New chats start with a generic title that will be updated on first message
     chatHistory[newId] = { title: title, history: [] };
     loadChat(newId);
 }
@@ -422,14 +414,12 @@ function startNewChat(id = null, title = 'New Chat') {
 // Toggle Floating Actions Menu
 showActionsBtn.onclick = () => {
     floatingActions.style.display = floatingActions.style.display === 'flex' ? 'none' : 'flex';
-    devFormOverlay.style.display = 'none'; // CRITICAL FIX: Hide the overlay when showing actions
+    devFormOverlay.style.display = 'none';
 };
 
-// Dev Team Button in Floating Menu (UPDATED LOGIC)
+// Dev Team Button in Floating Menu
 devTeamBtn.onclick = () => {
     floatingActions.style.display = 'none';
-    
-    // Toggle the overlay
     const overlayStyle = devFormOverlay.style.display;
     if (overlayStyle === 'flex') {
         devFormOverlay.style.display = 'none';
@@ -438,7 +428,7 @@ devTeamBtn.onclick = () => {
     }
 };
 
-// CRITICAL FIX: Close button for the form overlay
+// Close button for the form overlay
 closeDevFormBtn.onclick = () => {
     devFormOverlay.style.display = 'none';
 };
@@ -446,7 +436,6 @@ closeDevFormBtn.onclick = () => {
 // Auto resize textarea
 inputEl.addEventListener('input', () => {
     inputEl.style.height = 'auto'; 
-    // Limit max height for large screens
     inputEl.style.height = `${Math.min(inputEl.scrollHeight, 220)}px`;
 });
 
@@ -554,7 +543,7 @@ devSubmitBtn.onclick = async () => {
         statusDiv.innerHTML = `❌ Network Error: Could not reach server.`;
         console.error('Submission error:', error);
     } finally {
-        devFormOverlay.style.display = 'none'; // CRITICAL FIX: Hide the overlay after submission
+        devFormOverlay.style.display = 'none'; 
     }
 };
 
