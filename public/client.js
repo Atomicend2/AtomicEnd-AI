@@ -503,6 +503,14 @@ menuBtn.onclick = () => {
     sidebar.classList.toggle('open');
 };
 
+// FIX: New Chat button logic. It uses startNewChat to ensure a clean session.
+newChatBtn.onclick = () => {
+    startNewChat(null, 'New Chat');
+    if (window.innerWidth < 768) {
+        sidebar.classList.remove('open');
+    }
+};
+
 clearHistoryBtn.onclick = () => {
     if (confirm("Are you sure you want to clear ALL chat history?")) {
         localStorage.removeItem('atomicEndChats');
@@ -564,4 +572,4 @@ window.onload = () => {
     }
     renderChatList();
     inputEl.focus();
-}; 
+};
