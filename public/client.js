@@ -1,4 +1,4 @@
-// client.js - AtomicEnd Multimodal UI logic (FINAL FIXES: Layout + Dynamic Chat Title)
+// client.js - AtomicEnd Multimodal UI logic (FINAL FIXES: Layout + Dynamic Chat Title + Voice Record)
 
 'use strict';
 
@@ -47,7 +47,7 @@ const INITIAL_AI_MSG = `Welcome to **AtomicEnd**, the Elite AI platform crafted 
 * **I do Guided Study** & Debugging.
 How can I assist you with your project today?`;
 
-// --- Voice Recognition Setup ---
+// --- Voice Recognition Setup (FIXED) ---
 let recognizing = false;
 let recognition = null;
 
@@ -72,10 +72,28 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         submitChat(transcript); 
     };
 } else {
-    recordBtn.onclick = () => alert('Voice not supported. Use Chrome/Edge.');
+    // Fallback
+    recordBtn.onclick = () => alert('Voice recognition is not supported in this browser. Please use Chrome/Edge.');
 }
 
-// --- Utility Functions ---
+// CRITICAL FIX: Add event listener to start/stop recognition
+recordBtn.addEventListener('click', () => {
+    if (!recognition) {
+        alert('Voice recognition is not available.');
+        return;
+    }
+
+    if (recognizing) {
+        recognition.stop();
+        // recognition.onend will handle UI reset
+    } else {
+        // Must be attached to a user action to prompt for mic permission
+        recognition.start(); 
+    }
+});
+
+
+// --- Utility Functions (Unchanged) ---
 function escapeHtml(s){ 
     return String(s).replace(/[&<>"']/g, (m)=>({ 
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' 
@@ -186,7 +204,7 @@ async function typeWriter(el, htmlContent, speed = 12) {
 }
 
 
-// --- Main Chat Submission Logic ---
+// --- Main Chat Submission Logic (Unchanged) ---
 async function submitChat(message) {
     if(isSending) return; 
     isSending = true;
@@ -198,7 +216,7 @@ async function submitChat(message) {
     // Check if we need to rename the chat BEFORE submission
     const currentTitle = chatHistory[activeChatId]?.title;
     if (currentTitle === 'New Chat' || currentTitle === 'Untitled Chat' || !currentTitle) {
-        // CRITICAL FIX: Set the chat title to the first 30 chars of the new message
+        // Set the chat title to the first 30 chars of the new message
         const newTitle = message.substring(0, 30) + (message.length > 30 ? '...' : '');
         chatHistory[activeChatId] = chatHistory[activeChatId] || { history: [] };
         chatHistory[activeChatId].title = newTitle;
@@ -315,7 +333,7 @@ async function submitChat(message) {
 }
 
 
-// --- Multi-Chat Functions ---
+// --- Multi-Chat Functions (Unchanged) ---
 function renderChatList() {
     chatList.innerHTML = '';
     const chatIds = Object.keys(chatHistory);
@@ -398,7 +416,7 @@ function startNewChat(id = null, title = 'New Chat') {
     loadChat(newId);
 }
 
-// --- Event Listeners and Initial Load ---
+// --- Event Listeners and Initial Load (Unchanged except recordBtn) ---
 
 // Toggle Floating Actions Menu
 showActionsBtn.onclick = () => {
