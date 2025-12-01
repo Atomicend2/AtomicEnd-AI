@@ -21,7 +21,7 @@ body{
     display:flex;
     height:100vh;
     width:100vw; 
-    overflow: hidden; /* Prevent scrolling on body, let chat-container handle it */
+    overflow: hidden; /* Prevent scrolling on body */
 }
 
 /* ============== APP LAYOUT ============== */
@@ -29,22 +29,29 @@ body{
     flex-grow:1;
     display:flex;
     flex-direction:column;
-    height:100vh; /* Ensure main content takes full viewport height */
+    height:100vh; /* Full viewport height */
     transition:transform .3s;
     background-color:var(--bg);
     width: 100%;
+    /* No need for flex-grow on main content itself */
 }
 
-/* HEADER BAR (FIXED HEIGHT / NO CROPPING) */
+/* HEADER BAR (NOW STATIC/FIXED) */
 #main-header{
     display:flex;
     align-items:center;
-    padding:12px 15px; /* CRITICAL FIX: Increased padding for touch targets */
+    padding:12px 15px; 
     background-color:var(--sidebar-bg);
     border-bottom:1px solid #1c1c1c;
     color:white;
-    flex-shrink: 0; /* CRITICAL FIX: Ensure header is never cropped */
-    z-index: 10;
+    
+    /* CRITICAL FIX 1: Fix the header to the top */
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 500; 
+    flex-shrink: 0;
 }
 #current-chat-title{
     margin:0;
@@ -117,11 +124,15 @@ body{
     background:var(--chat-bubble-ai);color:white;
 }
 
-/* CHAT CONTAINER (Fills space between header and footer) */
+/* CHAT CONTAINER (Scrollable area) */
 #chat-container {
-    flex-grow:1; /* CRITICAL FIX: This must be 1 to use all vertical space */
+    height: 100vh; /* Use 100vh of the main content area */
     overflow-y:auto;
-    padding:15px 10px;
+    /* CRITICAL FIX 2: Add padding-top and padding-bottom to reserve space */
+    padding-top: 64px; /* Estimated header height (40px content + 2*12px padding) */
+    padding-bottom: 110px; /* Estimated footer height (input area + padding) */
+    padding-left: 10px;
+    padding-right: 10px;
 }
 #chat{
     max-width:800px;
@@ -130,38 +141,32 @@ body{
     padding-bottom:20px;
 }
 
-/* =============== CHAT BUBBLE STYLING (DIFFERENT COLORS & DESIGN) =============== */
-
+/* =============== CHAT BUBBLE STYLING =============== */
 .msg{
     max-width:90%;
     padding:12px;
     margin-bottom:10px;
     line-height:1.5;
     word-wrap:break-word;
-    /* General Styling */
     border-radius:20px;
     font-size:1.0em;
     font-weight: 500;
 }
-
-/* AI Message (System/AtomicEnd - Left Aligned) */
+/* AI Message */
 .msg.ai{
     background-color:var(--chat-bubble-ai); 
     color:white;
     margin-right:auto;
-    /* Stylish Design: Sharp top-left corner */
     border-top-left-radius: 5px; 
     border-top-right-radius: 20px;
     border-bottom-left-radius: 20px;
     border-bottom-right-radius: 20px;
 }
-
-/* User Message (Your Message - Right Aligned) */
+/* User Message */
 .msg.user{
     background-color:var(--accent); 
-    color:var(--sidebar-bg); /* Dark text on bright background */
+    color:var(--sidebar-bg); 
     margin-left:auto;
-    /* Stylish Design: Sharp top-right corner */
     border-top-left-radius: 20px;
     border-top-right-radius: 5px; 
     border-bottom-left-radius: 20px;
@@ -197,14 +202,21 @@ pre code{
 }
 
 
-/* ========== INPUT BAR (Fixed Height) ========== */
+/* ========== INPUT BAR (NOW STATIC/FIXED) ========== */
 #input-footer{
-    width:100%;padding:10px 10px;
+    width:100%;
+    padding:10px 10px;
     background:var(--sidebar-bg);
     border-top:1px solid #1c1c1c;
     display:flex;flex-direction:column;
-    align-items:center;position:relative;
-    flex-shrink: 0; /* CRITICAL FIX: Ensure footer doesn't shrink */
+    align-items:center;
+    
+    /* CRITICAL FIX 3: Fix the footer to the bottom */
+    position: fixed; 
+    bottom: 0;
+    left: 0;
+    z-index: 500;
+    flex-shrink: 0;
 }
 #input-area{
     display:flex;width:100%;max-width:800px;
@@ -243,22 +255,21 @@ pre code{
 .floating-action-btn:hover{background:#333;}
 
 
-/* =============== FORM OVERLAY STYLING (CRITICAL FIX) =============== */
+/* =============== FORM OVERLAY STYLING =============== */
 
 /* Full screen overlay container */
 #devFormOverlay {
-    display: none; /* Controlled by JS */
+    display: none; 
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.9); /* Semi-transparent blackout */
+    background: rgba(0, 0, 0, 0.9); 
     z-index: 1000;
     justify-content: center;
     align-items: center;
 }
-
 /* Centered Form Modal */
 #devFormContainer {
     display: flex; 
@@ -268,17 +279,15 @@ pre code{
     padding: 20px;
     background: var(--sidebar-bg);
     border-radius: 10px;
-    box-shadow: 0 0 20px rgba(255, 71, 161, 0.5); /* Pink shadow */
+    box-shadow: 0 0 20px rgba(255, 71, 161, 0.5); 
     position: relative;
 }
-
 #devFormContainer h3 {
     color: var(--accent);
     margin-top: 0;
     font-size: 1.4em;
     text-align: center;
 }
-
 #devFormContainer input, #devFormContainer textarea {
     padding: 10px;
     margin-bottom: 15px;
@@ -289,7 +298,6 @@ pre code{
     font-size: 1em;
     resize: none;
 }
-
 #devSubmitBtn {
     background: var(--accent);
     color: var(--sidebar-bg);
@@ -300,11 +308,9 @@ pre code{
     cursor: pointer;
     transition: background 0.2s;
 }
-
 #devSubmitBtn:hover {
     background: #ff7fbb;
 }
-
 #closeDevFormBtn {
     position: absolute;
     top: 10px;
@@ -334,10 +340,27 @@ pre code{
     #menuBtn{
         display:none;
     }
-    /* Adjust main content alignment */
+    
+    /* Main Content must now account for the static sidebar */
     #main-content{
-        width: calc(100vw - 280px); /* Fill remaining space */
+        width: calc(100% - 280px); 
+        margin-left: 280px; /* Push main content over by sidebar width */
     }
+
+    /* Fixed Header and Footer must be restricted to the main content area width */
+    #main-header, #input-footer {
+        width: calc(100% - 280px);
+        left: 280px; /* Start after the sidebar */
+    }
+
+    /* Adjust chat container padding since header/footer width changed */
+    #chat-container {
+        padding-top: 64px; 
+        padding-bottom: 110px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
     /* Align the chat title */
     #current-chat-title{
         text-align:left;
