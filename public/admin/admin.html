@@ -104,6 +104,52 @@
         <p id="dashboard-message" style="color:red; text-align:center; margin-top:10px;"></p>
     </div>
     
-    <script src="admin.js"></script>
+    <script>
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const password = document.getElementById('adminPassword').value;
+
+        const response = await fetch('/admin-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // CRITICAL FIX: Store the token and redirect
+            localStorage.setItem('adminToken', data.token);
+            // Redirect to the same page, which will now load the dashboard content
+            window.location.reload(); 
+        } else {
+            alert('Invalid Admin Password.');
+        }
+    });
+
+    // CRITICAL CHECK: Logic to load content if token exists
+    window.onload = async () => {
+        const token = localStorage.getItem('adminToken');
+        if (token) {
+            // Fetch and display submissions (assuming this part is correct from previous steps)
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('dashboardContainer').style.display = 'block';
+
+            try {
+                const submissionResponse = await fetch('/admin-submissions', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const submissions = await submissionResponse.json();
+                // ... (rest of submission display logic) ...
+            } catch (error) {
+                // Handle error if token is invalid
+                localStorage.removeItem('adminToken');
+                window.location.reload();
+            }
+        }
+    };
+</script>
 </body>
 </html>
+ 
