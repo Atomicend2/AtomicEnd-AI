@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atomic End - Sign In</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ... (Same styles as before) */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--bg);
+            flex-direction: column;
+            text-align: center;
+        }
+        .login-box {
+            padding: 40px;
+            background: var(--sidebar-bg);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(34, 204, 255, 0.3);
+            max-width: 350px;
+            width: 90%;
+        }
+        h2 {
+            color: var(--neon);
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+        .github-btn { /* NEW CLASS NAME */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #333; /* GitHub color */
+            color: white;
+            padding: 12px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .github-btn:hover {
+            background-color: #000;
+        }
+        .github-btn img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            filter: invert(1); /* Makes the logo white */
+        }
+        p {
+            color: #777;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>Sign In to AtomicEnd</h2>
+        <a href="/auth/github" class="github-btn">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub icon">
+            Sign in with GitHub
+        </a>
+        <p>Your session will be securely managed.</p>
+    </div>
+</body>
+</html>

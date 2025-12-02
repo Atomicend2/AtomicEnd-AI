@@ -3,77 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atomic End - Elite AI Coder</title>
+    <title>Atomic End - The Ultimate AI Coder</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="/manifest.json">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            text-align: center;
+            background-color: var(--bg);
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            padding: 40px;
+            background: var(--sidebar-bg);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(255, 71, 161, 0.5);
+        }
+        h1 {
+            font-size: 2.5em;
+            color: white;
+            margin-bottom: 10px;
+        }
+        h1 span {
+            color: var(--accent);
+        }
+        p {
+            color: #ccc;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+        .cta-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            background: var(--neon);
+            color: black;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+        .cta-btn:hover {
+            background: #66e0ff;
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
-
-<div id="sidebar">
-    <div class="sidebar-header">
-        <h2 id="app-title-sidebar">Atomic <span>End</span></h2>
-        </div>
-    <button id="newChatBtn" class="new-chat-btn">✚ New Chat</button>
-    <div id="chat-list-container">
-        <div id="chat-list">
-            </div>
+    <div class="container">
+        <h1>Welcome to Atomic <span>End</span></h1>
+        <p>The **Ultimate AI Platform** crafted by Atomic. We specialize in **Zero-Error Code Generation**, deep debugging, and generating complete multi-file projects, including full **Godot Games** and **GDScript Trees**.</p>
+        <a href="/auth/github" class="github-btn">
+        <p style="margin-top: 20px; font-size: 0.85em; color: #555;">Sign-in required to access the elite AI coding environment.</p>
     </div>
-    
-    <div class="sidebar-footer">
-        <button id="clearHistoryBtn" class="clear-history-btn">Clear All Chats</button>
-        <button id="signInBtn">Account Settings & Sign In</button>
-    </div>
-</div>
-
-<div id="main-content">
-    
-    <div id="main-header">
-        <button id="menuBtn" class="action-btn">☰</button>
-        <h2 id="current-chat-title">New Chat</h2>
-        <div class="header-actions">
-            </div>
-    </div>
-    
-    <div id="chat-container">
-        <div id="chat">
-            </div>
-    </div>
-
-    <div id="devFormOverlay">
-        <div id="devFormContainer">
-            <button id="closeDevFormBtn" class="action-btn">✕</button>
-            <h3>Join AtomicEnd Dev Team</h3>
-            <p style="color:#ccc; font-size:0.9em;">If you're interested in collaborating, please provide your contact and message. Atomic will reach out to talented individuals.</p>
-            <input type="text" id="devContactInput" placeholder="Your Email, WhatsApp, or GitHub link" required>
-            <textarea id="devMessageInput" placeholder="Tell us about your skills and why you want to collaborate (min 10 chars)" rows="5" required></textarea>
-            <button id="devSubmitBtn">Submit Interest</button>
-        </div>
-    </div>
-    <div id="editActionsOverlay">
-    <div id="editActionsContainer">
-        <button id="editMessageBtn">✏️ Edit Message</button>
-        </div>
-    </div>
-    <div id="input-footer">
-        <div id="floatingActions">
-            <button id="chooseFileBtn" class="floating-action-btn">📎 Attach File (Max 20MB)</button>
-            <button id="devTeamBtn" class="floating-action-btn">💻 Dev Team Contact</button>
-        </div>
-        
-        <div id="input-area">
-            <input type="file" id="fileInput" accept="image/*, .txt, .js, .py, .html, .css" style="display:none;">
-
-            <button id="showActionsBtn" class="action-btn">＋</button>
-            
-            <textarea id="input" rows="1" placeholder="Message AtomicEnd..." aria-label="Chat input"></textarea>
-            
-            <button id="recordBtn" class="action-btn">🎙️</button>
-            <button id="sendBtn" class="action-btn">▲</button>
-        </div>
-    </div>
-</div>
-
-<script src="client.js"></script>
 </body>
 </html>
-

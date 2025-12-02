@@ -1,0 +1,77 @@
+<!DOCTYPE html>    <html lang="en">    
+<head>    
+    <meta charset="UTF-8">    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <title>Atomic End - Elite AI Coder</title>    
+    <link rel="stylesheet" href="style.css">    
+    <link rel="manifest" href="/manifest.json">    
+</head>    
+<body>    
+    <div id="sidebar">    
+        <div class="sidebar-header">    
+            <h2 id="app-title-sidebar">Atomic <span>End</span></h2>    
+        </div>    
+        <button id="newChatBtn" class="new-chat-btn">✚ New Chat</button>    
+        <div id="chat-list-container">    
+            <div id="chat-list">    
+            </div>    
+        </div>    
+        <div class="sidebar-footer">    
+            <div id="userInfo" style="margin-bottom: 10px; color: white;">
+                Loading User...
+            </div>
+            <button id="clearHistoryBtn" class="clear-history-btn">Clear All Chats</button>    
+            <button id="logoutBtn" style="background: #e74c3c; color: white;">Sign Out</button> 
+        </div>
+
+    </div>    
+    <div id="main-content">    
+        <div id="main-header">    
+            <button id="menuBtn" class="action-btn">☰</button>    
+            <h2 id="current-chat-title">New Chat</h2>    
+            <div class="header-actions">    
+            </div>    
+        </div>    
+        
+        <div id="chat-container">    
+            <div id="chat">    
+            </div>    
+        </div>    
+
+        <div id="devFormOverlay">    
+            <div id="devFormContainer">    
+                <button id="closeDevFormBtn" class="action-btn">✕</button>    
+                <h3>Join AtomicEnd Dev Team</h3>    
+                <p style="color:#ccc; font-size:0.9em;">If you're interested in collaborating, please provide your contact and message. Atomic will reach out to talented individuals.</p>    
+                <input type="text" id="devContactInput" placeholder="Your Email, WhatsApp, or GitHub link" required>    
+                <textarea id="devMessageInput" placeholder="Tell us about your skills and why you want to collaborate (min 10 chars)" rows="5" required></textarea>    
+                <button id="devSubmitBtn">Submit Interest</button>    
+            </div>    
+        </div>    
+        <div id="editActionsOverlay">    
+            <div id="editActionsContainer">    
+                <button id="editMessageBtn">✏️ Edit Message</button>    
+            </div>    
+        </div>    
+        <div id="input-footer">    
+            <div id="floatingActions">    
+                <button id="chooseFileBtn" class="floating-action-btn">📎 Attach File (Max 20MB)</button>    
+                <button id="devTeamBtn" class="floating-action-btn">💻 Dev Team Contact</button>    
+            </div>    
+                
+            <div id="input-area">    
+                <input type="file" id="fileInput" accept="image/*, .txt, .js, .py, .html, .css" style="display:none;">    
+
+                <button id="showActionsBtn" class="action-btn">＋</button>    
+                    
+                <textarea id="input" rows="1" placeholder="Message AtomicEnd..." aria-label="Chat input"></textarea>    
+                    
+                <button id="recordBtn" class="action-btn">🎙️</button>    
+                <button id="sendBtn" class="action-btn">▲</button>    
+            </div>    
+        </div>
+    </div>    
+
+    <script src="client.js"></script>
+</body>    
+</html>

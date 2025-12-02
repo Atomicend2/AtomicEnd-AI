@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atomic End - Admin Dashboard</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --neon: #22ccff;
+            --accent: #ff47a1;
+            --panel: #151515;
+            --sidebar-bg: #0d0d0d;
+        }
+        body {
+            margin: 0;
+            background-color: var(--bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            padding: 20px;
+        }
+        #login-form, #dashboard {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: var(--sidebar-bg);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 71, 161, 0.4);
+        }
+        h2 {
+            color: var(--neon);
+            text-align: center;
+        }
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #222;
+            color: white;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: var(--accent);
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #ff7fbb;
+        }
+        #submissions-list {
+            list-style: none;
+            padding: 0;
+        }
+        .submission-item {
+            background: var(--panel);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 5px solid var(--neon);
+        }
+        .submission-item strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 5px;
+        }
+        .submission-item small {
+            color: var(--muted);
+            display: block;
+            margin-top: 5px;
+            font-size: 0.8em;
+        }
+        .message-content {
+            white-space: pre-wrap;
+            margin-top: 5px;
+            padding-left: 10px;
+            border-left: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-form">
+        <h2>Admin Login</h2>
+        <input type="password" id="password-input" placeholder="Admin Password" required>
+        <button id="login-btn">Log In</button>
+        <p id="login-message" style="color:red; text-align:center; margin-top:10px;"></p>
+    </div>
+
+    <div id="dashboard" style="display:none;">
+        <h2>Atomic End - Submissions</h2>
+        <p style="color:var(--neon);">Note: Submissions are read from in-memory cache and Render logs for free persistence.</p>
+        <button id="logout-btn">Log Out</button>
+        <button id="refresh-btn" style="margin-top:10px;">Refresh Submissions</button>
+        <ul id="submissions-list">
+            </ul>
+        <p id="dashboard-message" style="color:red; text-align:center; margin-top:10px;"></p>
+    </div>
+    
+    <script src="admin.js"></script>
+</body>
+</html>
