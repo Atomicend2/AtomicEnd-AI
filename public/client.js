@@ -576,10 +576,23 @@ devSubmitBtn.onclick = async () => {
 
 // --- FIXED INITIAL LOAD ---
 window.onload = () => {
-    if (!chatHistory[activeChatId]) {
-        // If no chat exists, create default one
-        startNewChat('default', 'General Chat');
+    const storedActive = localStorage.getItem('atomicEndActiveChatId');
+
+    // If no stored chat OR the stored chat was deleted
+    if (!storedActive || !chatHistory[storedActive]) {
+        // If no chats exist at all, create default
+        const keys = Object.keys(chatHistory);
+        if (keys.length === 0) {
+            startNewChat('default', 'General Chat');
+        } else {
+            // Pick the first existing chat
+            activeChatId = keys[0];
+            localStorage.setItem('atomicEndActiveChatId', activeChatId);
+            loadChat(activeChatId);
+        }
     } else {
+        // Load last opened real chat
+        activeChatId = storedActive;
         loadChat(activeChatId);
     }
 
