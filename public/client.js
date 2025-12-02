@@ -52,7 +52,7 @@ let activeChatId = localStorage.getItem('atomicEndActiveChatId') || 'default';
 let uploadedFileBase64 = null; 
 let uploadedFileMimeType = null;
 let isSending = false; 
-let messageToEditData = null; // Stores {chatId, index} for the message being edited
+let messageToEditData = null;
 
 const CHAT_ENDPOINT = '/chat'; 
 const INITIAL_AI_MSG = `Welcome to **AtomicEnd**, the Elite AI platform crafted by Atomic! I specialize in:
@@ -79,7 +79,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     };
     recognition.onend = () => {
         recognizing = false;
-        recordBtn.textContent = '🎙️'; // Reset to mic emoji
+        recordBtn.textContent = '🎙️';
         recordBtn.style.backgroundColor = '#222';
     };
     recognition.onresult = (e) => {
@@ -87,7 +87,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         submitChat(transcript); 
     };
 } else {
-    // Fallback
     recordBtn.onclick = () => alert('Voice recognition is not supported in this browser. Please use Chrome/Edge.');
 }
 
@@ -97,15 +96,12 @@ recordBtn.addEventListener('click', () => {
         return;
     }
 
-    if (recognizing) {
-        recognition.stop();
-    } else {
-        recognition.start(); 
-    }
+    if (recognizing) recognition.stop();
+    else recognition.start();
 });
 
 
-// --- Utility Functions ---
+// --- Utility Functions (UNCHANGED) ---
 function escapeHtml(s){ 
     return String(s).replace(/[&<>"']/g, (m)=>({ 
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' 
@@ -129,17 +125,14 @@ function markdownToHtml(rawText) {
     let html = escapeHtml(rawText);
     html = html.replace(/\n/g, '<br>');
 
-    // Code blocks
     html = html.replace(/```([\s\S]*?)```/g, (match, codeContent) => {
         codeContent = codeContent.replace(/^<br>/, '');
         return `<div class="code-container"><pre><code class="copyable-code">${codeContent}</code></pre></div>`;
     });
 
-    // Bold / Italic
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-    // ZIP response tag
     const ZIP_START_TAG = /---ZIP_RESPONSE:([\w\d\.-]+)---<br>([\s\S]*?)<br>---END_ZIP---/;
     let zipMatch;
     if (zipMatch = html.match(ZIP_START_TAG)) {
@@ -188,7 +181,7 @@ function appendMessage(role, html) {
   div.className = `msg ${role}`;
   div.innerHTML = html;
   chatEl.appendChild(div);
-  chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: 'smooth' }); // Smooth scroll
+  chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: 'smooth' });
   return div;
 }
 
@@ -214,22 +207,16 @@ async function typeWriter(el, htmlContent, speed = 12) {
 }
 
 
-// --- Message Editing Logic ---
-
-// NEW: Shows the edit/delete options when a user message is clicked
+// --- Editing Logic (UNCHANGED) ---
 window.showEditActions = (chatId, messageIndex) => {
-    // Hide other floating menus
     floatingActions.style.display = 'none';
     devFormOverlay.style.display = 'none';
 
-    // Store the data for the message being edited
     messageToEditData = { chatId, index: messageIndex };
     
-    // Display the edit actions overlay
     editActionsOverlay.style.display = 'flex';
 };
 
-// NEW: The actual editing process
 editMessageBtn.onclick = () => {
     if (!messageToEditData) return;
 
@@ -238,38 +225,23 @@ editMessageBtn.onclick = () => {
 
     if (!chat || index >= chat.history.length) return;
 
-    // The message we edit is always the 'text' part of the 'user' turn
     const originalText = chat.history[index].parts[0].text;
-    
-    // Use the native prompt
     const newText = prompt("Edit your message:", originalText);
 
-    editActionsOverlay.style.display = 'none'; // Hide the menu
+    editActionsOverlay.style.display = 'none';
 
     if (newText && newText.trim() !== originalText) {
-        // 1. Update the stored user message text
         chat.history[index].parts[0].text = newText.trim();
-        
-        // 2. Remove all subsequent messages (including the next AI response)
-        chat.history.splice(index + 1); 
-
-        // 3. Save the updated history
+        chat.history.splice(index + 1);
         localStorage.setItem('atomicEndChats', JSON.stringify(chatHistory));
-
-        // 4. Reload the chat to show the edited message and truncated history
         loadChat(chatId);
-        
-        // 5. Automatically submit the edited message to the AI
-        setTimeout(() => {
-            submitChat(newText.trim());
-        }, 50); 
+        setTimeout(() => submitChat(newText.trim()), 50);
     }
-    messageToEditData = null; // Clear state
+
+    messageToEditData = null;
 };
 
-// NEW: Close the edit menu by clicking the overlay itself
 editActionsOverlay.onclick = (e) => {
-    // Only close if the click is directly on the overlay, not on the inner container
     if (e.target.id === 'editActionsOverlay') {
         editActionsOverlay.style.display = 'none';
         messageToEditData = null;
@@ -277,20 +249,17 @@ editActionsOverlay.onclick = (e) => {
 };
 
 
-// --- Main Chat Submission Logic ---
+// --- Main Chat Submission (UNCHANGED) ---
 async function submitChat(message) {
     if(isSending) return; 
     isSending = true;
 
-    // Hide actions menu and dev form
     floatingActions.style.display = 'none';
     devFormOverlay.style.display = 'none';
-    editActionsOverlay.style.display = 'none'; // Hide edit menu
+    editActionsOverlay.style.display = 'none';
 
-    
-    // Check if we need to rename the chat BEFORE submission
     const currentTitle = chatHistory[activeChatId]?.title;
-    if (currentTitle === 'New Chat' || currentTitle === 'Untitled Chat' || !currentTitle) {
+    if (!currentTitle || currentTitle === 'New Chat' || currentTitle === 'Untitled Chat') {
         const newTitle = message.substring(0, 30) + (message.length > 30 ? '...' : '');
         chatHistory[activeChatId] = chatHistory[activeChatId] || { history: [] };
         chatHistory[activeChatId].title = newTitle;
@@ -316,7 +285,7 @@ async function submitChat(message) {
     let textPrompt = message.trim();
     if (textPrompt.length === 0 && uploadedFileBase64) {
         textPrompt = `Analyze this file and provide a detailed response or a coding project based on its content/context.`;
-    } else if (textPrompt.length === 0) {
+    } else if (!textPrompt.length) {
         appendMessage('ai', '❌ Error: Please provide a non-empty message.');
         isSending = false;
         return;
@@ -325,7 +294,7 @@ async function submitChat(message) {
     partsArray.push({ text: textPrompt });
 
     const historyForAPI = chatHistory[activeChatId]?.history || [];
-    const contentsToSend = [...historyForAPI.map(item => ({role: item.role, parts: item.parts})), 
+    const contentsToSend = [...historyForAPI.map(item => ({role: item.role, parts: item.parts})),
                             { role: 'user', parts: partsArray }];
 
     const body = {
@@ -333,7 +302,6 @@ async function submitChat(message) {
         sessionId: activeChatId, 
     };
 
-    // UI Reset and Feedback
     inputEl.value = '';
     inputEl.style.height = '44px'; 
     uploadedFileBase64 = null;
@@ -341,19 +309,17 @@ async function submitChat(message) {
 
     const aiDiv = appendMessage('ai', '<span class="typing">...</span>');
     const span = aiDiv.querySelector('span');
-    
-    // Enhanced UX Feedback (Preserved)
-    const promptLower = textPrompt.toLowerCase();
-    if (promptLower.includes('zip file') || promptLower.includes('project file') || promptLower.includes('create a project')) {
+
+    const lower = textPrompt.toLowerCase();
+    if (lower.includes('zip file') || lower.includes('project file') || lower.includes('create a project')) {
         span.textContent = 'AtomicEnd is generating a large, multi-file project package...';
-    } else if (promptLower.includes('deep research') || promptLower.includes('guided study')) {
+    } else if (lower.includes('deep research') || lower.includes('guided study')) {
         span.textContent = 'AtomicEnd is initiating deep research and analysis...';
-    } else if (promptLower.includes('generate image') || promptLower.includes('create a picture')) {
+    } else if (lower.includes('generate image') || lower.includes('create a picture')) {
         span.textContent = 'AtomicEnd is routing your request. **Image generation is a premium service and currently under integration.**';
     } else {
         span.textContent = 'AtomicEnd is processing...';
     }
-
 
     try {
         const response = await fetch(CHAT_ENDPOINT, {
@@ -369,7 +335,6 @@ async function submitChat(message) {
 
         const data = await response.json();
         
-        // History Update and Persistence
         const aiResponsePart = { role: 'model', parts: [{ text: data.response }] };
         const userPart = { role: 'user', parts: partsArray }; 
 
@@ -381,7 +346,6 @@ async function submitChat(message) {
         
         localStorage.setItem('atomicEndChats', JSON.stringify(chatHistory));
         
-        // Final UI Update
         renderChatList();
         
         span.textContent = ''; 
@@ -398,44 +362,38 @@ async function submitChat(message) {
         console.error('Chat submission error:', error);
     } finally {
         isSending = false;
-        // Reset send button appearance
         sendBtn.innerHTML = '▲'; 
         sendBtn.style.backgroundColor = 'var(--send-btn-bg)';
     }
 }
 
 
-// --- Multi-Chat Functions ---
+// --- Multi-Chat (UNCHANGED except load fixes) ---
 function renderChatList() {
     chatList.innerHTML = '';
     const chatIds = Object.keys(chatHistory);
-    
+
     if (chatIds.length === 0) {
-        // If history is empty, ensure one chat session exists
-        startNewChat('default', 'General Chat', false); // Do not reload the chat window
+        startNewChat('default', 'General Chat');
         return;
     }
 
-    // Sort by session ID timestamp (newest first)
-    chatIds.sort((a, b) => b.substring(8) - a.substring(8)); 
+    chatIds.sort((a, b) => b.substring(8) - a.substring(8));
 
     chatIds.forEach(id => {
         const chat = chatHistory[id];
         const div = document.createElement('div');
         div.className = `chat-thread-item ${id === activeChatId ? 'active' : ''}`;
-        div.textContent = chat.title || 'Untitled Chat'; 
+        div.textContent = chat.title || 'Untitled Chat';
         div.onclick = () => loadChat(id);
-        
-        // Manual Renaming on Double Click
+
         div.ondblclick = () => {
             const newTitle = prompt('Rename chat:', chat.title);
-            if (newTitle && newTitle.trim().length > 0) {
+            if (newTitle && newTitle.trim()) {
                 chat.title = newTitle.trim();
                 localStorage.setItem('atomicEndChats', JSON.stringify(chatHistory));
-                renderChatList(); 
-                if (id === activeChatId) {
-                    currentChatTitleEl.textContent = newTitle.trim();
-                }
+                renderChatList();
+                if (id === activeChatId) currentChatTitleEl.textContent = newTitle.trim();
             }
         };
 
@@ -446,27 +404,23 @@ function renderChatList() {
 function loadChat(chatId) {
     activeChatId = chatId;
     localStorage.setItem('atomicEndActiveChatId', chatId);
-    
+
     chatEl.innerHTML = '';
     currentChatTitleEl.textContent = chatHistory[chatId]?.title || 'New Chat';
-    
-    // Always append the initial AI message when loading a chat
+
     appendMessage('ai', markdownToHtml(INITIAL_AI_MSG));
 
     const chat = chatHistory[chatId];
-    
-    if (chat && chat.history) {
-        let historyToRender = chat.history;
 
-        historyToRender.forEach((turn, index) => { // Use index for editing
+    if (chat?.history) {
+        chat.history.forEach((turn, index) => {
             if (turn.role === 'user' && turn.parts[0].text) {
                 let userHtml = escapeHtml(turn.parts[0].text);
                 const filePart = turn.parts.find(p => p.inlineData);
                 if (filePart) {
                     userHtml += `<br><em>[File: ${filePart.inlineData.mimeType} attached]</em>`;
                 }
-                
-                // NEW: Add click handler to show the edit menu for the user message
+
                 const userMsgDiv = appendMessage('user', userHtml);
                 userMsgDiv.onclick = () => showEditActions(chatId, index);
 
@@ -479,63 +433,46 @@ function loadChat(chatId) {
 
     renderChatList();
     chatEl.scrollTop = chatEl.scrollHeight;
-    
-    // Close sidebar on mobile after loading new chat
+
     if (window.innerWidth < 768) {
         sidebar.classList.remove('open');
     }
 }
 
 function startNewChat(id = null, title = 'New Chat') {
-    const newId = id || `session_${Date.now()}`; 
-    chatHistory[newId] = { title: title, history: [] };
-    
-    // Only persist and load if it's not the initial "default" chat load
+    const newId = id || `session_${Date.now()}`;
+    chatHistory[newId] = { title, history: [] };
+
     if (id !== 'default') {
         localStorage.setItem('atomicEndChats', JSON.stringify(chatHistory));
     }
+
     loadChat(newId);
 }
 
-// --- Event Listeners and Initial Load ---
 
-// Toggle Floating Actions Menu
+// --- Event Listeners ---
 showActionsBtn.onclick = () => {
-    // Hide other floating menus
     devFormOverlay.style.display = 'none';
     editActionsOverlay.style.display = 'none';
-    
     floatingActions.style.display = floatingActions.style.display === 'flex' ? 'none' : 'flex';
 };
 
-// Dev Team Button in Floating Menu
 devTeamBtn.onclick = () => {
     floatingActions.style.display = 'none';
-    const overlayStyle = devFormOverlay.style.display;
-    if (overlayStyle === 'flex') {
-        devFormOverlay.style.display = 'none';
-    } else {
-        devFormOverlay.style.display = 'flex';
-    }
+    devFormOverlay.style.display =
+        devFormOverlay.style.display === 'flex' ? 'none' : 'flex';
 };
 
-// Close button for the form overlay
-closeDevFormBtn.onclick = () => {
-    devFormOverlay.style.display = 'none';
-};
+closeDevFormBtn.onclick = () => devFormOverlay.style.display = 'none';
 
-// Auto resize textarea
 inputEl.addEventListener('input', () => {
-    inputEl.style.height = 'auto'; 
+    inputEl.style.height = 'auto';
     inputEl.style.height = `${Math.min(inputEl.scrollHeight, 220)}px`;
 });
 
-// Send button click
-sendBtn.onclick = () => {
-    submitChat(inputEl.value.trim());
-};
+sendBtn.onclick = () => submitChat(inputEl.value.trim());
 
-// Enter key to send (Shift+Enter for newline)
 inputEl.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -543,9 +480,8 @@ inputEl.addEventListener('keydown', (e) => {
     }
 });
 
-// File Upload Logic
 chooseFileBtn.onclick = () => {
-    floatingActions.style.display = 'none'; // Hide menu
+    floatingActions.style.display = 'none';
     fileInput.click();
 };
 
@@ -554,14 +490,14 @@ fileInput.onchange = (e) => {
     if (!file) return;
 
     if (file.type === 'application/zip' || file.name.endsWith('.zip')) {
-        alert("AtomicEnd cannot process ZIP files directly. Please extract and upload a single code file or image.");
-        fileInput.value = ''; 
+        alert("AtomicEnd cannot process ZIP files directly.");
+        fileInput.value = '';
         return;
     }
 
-    if (file.size > 20 * 1024 * 1024) { 
-        alert("File size exceeds 20MB limit for upload. Please use a smaller file.");
-        fileInput.value = ''; 
+    if (file.size > 20 * 1024 * 1024) {
+        alert("File exceeds 20MB limit.");
+        fileInput.value = '';
         return;
     }
 
@@ -569,21 +505,17 @@ fileInput.onchange = (e) => {
     reader.onload = (event) => {
         uploadedFileBase64 = event.target.result.split(',')[1];
         uploadedFileMimeType = file.type;
-        
-        // Give user feedback on the Send button
-        sendBtn.innerHTML = '📎'; 
-        sendBtn.style.backgroundColor = '#ffc107'; // Yellow/Orange indicator
+
+        sendBtn.innerHTML = '📎';
+        sendBtn.style.backgroundColor = '#ffc107';
     };
     reader.readAsDataURL(file);
 };
 
-// Sidebar Controls
-// CRITICAL FIX: menuBtn now Toggles the sidebar
 menuBtn.onclick = () => {
     sidebar.classList.toggle('open');
 };
 
-// FIX: New Chat button logic.
 newChatBtn.onclick = () => {
     startNewChat(null, 'New Chat');
     if (window.innerWidth < 768) {
@@ -592,34 +524,33 @@ newChatBtn.onclick = () => {
 };
 
 clearHistoryBtn.onclick = () => {
-    if (confirm("Are you sure you want to clear ALL chat history?")) {
+    if (confirm("Clear ALL chat history?")) {
         localStorage.removeItem('atomicEndChats');
         localStorage.removeItem('atomicEndActiveChatId');
         chatHistory = {};
         activeChatId = 'default';
         startNewChat('default', 'General Chat');
-        alert("All history cleared. Starting a fresh chat session.");
+        alert("History cleared.");
     }
 };
 
 signInBtn.onclick = () => {
-    alert("Account Settings and Cloud Sync feature coming soon!");
+    alert("Account Settings coming soon!");
 };
 
-// Dev Submission Logic 
 devSubmitBtn.onclick = async () => {
     const contact = devContactInput.value.trim();
     const message = devMessageInput.value.trim();
     if (contact.length < 5 || message.length < 10) {
-        alert("Please provide a valid contact and a message (minimum 10 characters).");
+        alert("Please enter valid contact + message.");
         return;
     }
-    
+
     devContactInput.value = '';
     devMessageInput.value = '';
 
-    const statusDiv = appendMessage('ai', 'Submitting contact...');
-    
+    const statusDiv = appendMessage('ai', 'Submitting...');
+
     try {
         const response = await fetch('/submit-dev-contact', {
             method: 'POST',
@@ -629,26 +560,29 @@ devSubmitBtn.onclick = async () => {
         
         const data = await response.json();
 
-        if (data.success) {
-            statusDiv.innerHTML = '✅ **Success!** Your contact information has been logged. The developer will reach out soon.';
-        } else {
-            statusDiv.innerHTML = `❌ Submission Failed: ${data.message || 'Check server logs.'}`;
-        }
+        statusDiv.innerHTML =
+            data.success ?
+            '✅ **Success!** Your contact info has been logged.' :
+            `❌ Submission Failed: ${data.message || 'Server error.'}`;
+
     } catch (error) {
         statusDiv.innerHTML = `❌ Network Error: Could not reach server.`;
-        console.error('Submission error:', error);
+        console.error(error);
     } finally {
-        devFormOverlay.style.display = 'none'; 
+        devFormOverlay.style.display = 'none';
     }
 };
 
 
-// Initial load
+// --- FIXED INITIAL LOAD ---
 window.onload = () => {
-    if (!chatHistory[activeChatId]) {        startNewChat('default', 'General Chat');
+    if (!chatHistory[activeChatId]) {
+        // If no chat exists, create default one
+        startNewChat('default', 'General Chat');
     } else {
-        loadChat(activeChatId); 
+        loadChat(activeChatId);
     }
+
     renderChatList();
     inputEl.focus();
-};y
+};
