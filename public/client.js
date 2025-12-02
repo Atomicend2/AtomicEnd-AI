@@ -611,14 +611,15 @@ async function checkAuthAndLoad() {
         const response = await fetch('/user-status'); 
         
         if (!response.ok) {
-            window.location.href = '/login'; 
+            // If authentication fails (server returns 401/302), redirect to the homepage
+            window.location.href = '/'; 
             return;
         }
 
         const data = await response.json();
         currentUser = data.user;
         
-        // Display User Info in the sidebar (UPDATED for GitHub data)
+        // Display User Info in the sidebar
         if(userInfoEl) {
             userInfoEl.innerHTML = `<span style="font-weight:bold;">${currentUser.displayName || currentUser.username}</span><br><span style="font-size:0.8em; color:#999;">@${currentUser.username} (GitHub)</span>`;
         }
@@ -649,8 +650,8 @@ async function checkAuthAndLoad() {
         inputEl.focus();
 
     } catch (error) {
-        console.error("Auth check failed, redirecting to login:", error);
-        window.location.href = '/login';
+        console.error("Auth check failed, redirecting to homepage:", error);
+        window.location.href = '/'; // Redirect to the main page /
     }
 }
 
